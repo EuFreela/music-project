@@ -61,6 +61,7 @@ class TrackBase(BaseModel):
     duration_seconds: Optional[int] = None
     track_number: Optional[int] = None
     lyrics: Optional[str] = None
+    links: Optional[dict] = None  # {streaming_url, spotify, youtube, ...}
 
 
 class TrackCreate(TrackBase):
@@ -70,6 +71,8 @@ class TrackCreate(TrackBase):
 class TrackResponse(TrackBase):
     model_config = ConfigDict(from_attributes=True)
     id: int
+    audio_original_filename: Optional[str] = None
+    audio_size: Optional[int] = None
     created_at: datetime
 
 

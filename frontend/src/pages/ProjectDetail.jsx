@@ -4,6 +4,7 @@ import api from '../services/api.js'
 import Modal from '../components/UI/Modal.jsx'
 import StatusBadge, { RELEASE_TYPE_MAP } from '../components/UI/StatusBadge.jsx'
 import SecureImage from '../components/UI/SecureImage.jsx'
+import TrackAudio from '../components/UI/TrackAudio.jsx'
 
 const TABS = [
   { id: 'faixas', label: 'Faixas', icon: '🎵' },
@@ -82,6 +83,46 @@ export default function ProjectDetail() {
     await api.delete(`/projects/${id}/tracks/${askDelete.item.id}`)
     setAskDelete(null)
     loadProject()
+  }
+
+  // ---------- Audio MP3 das faixas ----------
+  const [audioUploadingId, setAudioUploadingId] = useState(null)
+
+  const uploadTrackAudio = async (e, trackId) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setAudioUploadingId(trackId)
+    const formData = new FormData()
+    formData.append('file', file)
+    try {
+      await api.post(`/projects/${id}/tracks/${trackId}/audio`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      loadProject()
+    } catch (err) {
+      alert(err.response?.data?.detail || 'Erro no upload do áudio')
+    } finally {
+      setAudioUploadingId(null)
+      e.target.value = ''
+    }
+  }
+
+  const deleteTrackAudio = async (trackId) => {
+    await api.delete(`/projects/${id}/tracks/${trackId}/audio`)
+    setAskDelete(null)
+    loadProject()
+  }
+
+  const confirmDelete = () => {
+    if (askDelete.type === 'track') return deleteTrack()
+    if (askDelete.type === 'audio') return deleteTrackAudio(askDelete.item.id)
+    if (askDelete.type === 'collab') return deleteCollab()
+    return deleteFile()
+  }
+
+  const getTrackStreamUrl = (track) => {
+    const l = track.links || {}
+    return l.streaming_url || l.spotify || l.apple_music || l.youtube || l.youtube_music || l.deezer || null
   }
 
   // ---------- Colaboradores ----------
@@ -299,6 +340,8 @@ export default function ProjectDetail() {
                     <th className="px-4 py-3 font-medium">Título</th>
                     <th className="px-4 py-3 font-medium">ISRC</th>
                     <th className="px-4 py-3 font-medium">Duração</th>
+                    <th className="px-4 py-3 font-medium">Áudio</th>
+                    <th className="px-4 py-3 font-medium">Ouvir</th>
                     <th className="px-4 py-3 font-medium text-right">Ações</th>
                   </tr>
                 </thead>
@@ -309,6 +352,45 @@ export default function ProjectDetail() {
                       <td className="px-4 py-3 font-medium">{track.title}</td>
                       <td className="px-4 py-3 text-gray-500 dark:text-gray-400 font-mono text-xs">{track.isrc || '—'}</td>
                       <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{formatDuration(track.duration_seconds)}</td>
+                      <td className="px-4 py-3">
+                        {track.audio_original_filename ? (
+                          <div className="flex items-center gap-2 min-w-[170px]">
+                            <TrackAudio src={`/projects/${id}/tracks/${track.id}/audio`} title={track.title} />
+                            <button
+                              className="btn-ghost !py-1 !px-1.5 text-xs hover:!text-red-500"
+                              onClick={() => setAskDelete({ type: 'audio', item: track })}
+                              title={`Remover áudio: ${track.audio_original_filename}`}
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        ) : (
+                          <label className="btn-ghost !py-1 !px-2 text-xs cursor-pointer inline-block" title="Enviar MP3 da faixa">
+                            {audioUploadingId === track.id ? 'Enviando…' : '⬆ MP3'}
+                            <input
+                              type="file"
+                              accept="audio/*,.mp3,.wav,.flac,.aac,.ogg,.m4a"
+                              className="hidden"
+                              onChange={(e) => uploadTrackAudio(e, track.id)}
+                              disabled={audioUploadingId === track.id}
+                            />
+                          </label>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {getTrackStreamUrl(track) ? (
+                          <a
+                            href={getTrackStreamUrl(track)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border border-light-border dark:border-dark-border hover:border-accent-500/50 text-gray-600 dark:text-dark-text-secondary"
+                          >
+                            🔗 Ouvir ↗
+                          </a>
+                        ) : (
+                          <span className="text-gray-400">—</span>
+                        )}
+                      </td>
                       <td className="px-4 py-3 text-right whitespace-nowrap">
                         <button className="btn-ghost !py-1 !px-2 text-sm" onClick={() => setTrackModal(track)}>✏️</button>
                         <button className="btn-ghost !py-1 !px-2 text-sm hover:!text-red-500" onClick={() => setAskDelete({ type: 'track', item: track })}>🗑️</button>
@@ -495,16 +577,15 @@ export default function ProjectDetail() {
             <span className="text-4xl block mb-3">🗑️</span>
             <h2 className="text-lg font-semibold mb-2">Excluir?</h2>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-              Tem certeza que deseja excluir <strong className="text-light-text dark:text-dark-text">{askDelete.item.title || askDelete.item.name || askDelete.item.original_filename}</strong>?
+              {askDelete.type === 'audio' ? (
+                <>Tem certeza que deseja remover o áudio da faixa <strong className="text-light-text dark:text-dark-text">{askDelete.item.title}</strong>?</>
+              ) : (
+                <>Tem certeza que deseja excluir <strong className="text-light-text dark:text-dark-text">{askDelete.item.title || askDelete.item.name || askDelete.item.original_filename}</strong>?</>
+              )}
             </p>
             <div className="flex gap-2 justify-center">
               <button className="btn-secondary" onClick={() => setAskDelete(null)}>Cancelar</button>
-              <button
-                className="btn-danger"
-                onClick={askDelete.type === 'track' ? deleteTrack : askDelete.type === 'collab' ? deleteCollab : deleteFile}
-              >
-                Excluir
-              </button>
+              <button className="btn-danger" onClick={confirmDelete}>Excluir</button>
             </div>
           </div>
         </div>
@@ -521,12 +602,14 @@ function TrackFormModal({ track, onClose, onSubmit, existingTracks }) {
     duration_seconds: track.duration_seconds ?? '',
     track_number: track.track_number ?? (existingTracks.length + 1),
     lyrics: track.lyrics || '',
+    link: (track.links && (track.links.streaming_url || track.links.spotify || track.links.youtube || '')) || '',
   } : {
     title: '',
     isrc: '',
     duration_seconds: '',
     track_number: existingTracks.length + 1,
     lyrics: '',
+    link: '',
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -537,10 +620,12 @@ function TrackFormModal({ track, onClose, onSubmit, existingTracks }) {
     setLoading(true)
     try {
       await onSubmit({
-        ...form,
+        title: form.title.trim(),
         isrc: form.isrc?.trim() || null,
         duration_seconds: form.duration_seconds === '' ? null : Number(form.duration_seconds),
         track_number: form.track_number === '' ? null : Number(form.track_number),
+        lyrics: form.lyrics,
+        links: form.link?.trim() ? { streaming_url: form.link.trim() } : null,
       })
     } catch (err) {
       setError(err.response?.data?.detail || 'Erro ao salvar faixa')
@@ -574,6 +659,17 @@ function TrackFormModal({ track, onClose, onSubmit, existingTracks }) {
         <div>
           <label className="label">Duração (segundos)</label>
           <input type="number" min="0" className="input" value={form.duration_seconds} onChange={(e) => setForm({ ...form, duration_seconds: e.target.value })} placeholder="Ex: 215" />
+        </div>
+        <div>
+          <label className="label">Link de distribuição</label>
+          <input
+            type="url"
+            className="input"
+            value={form.link}
+            onChange={(e) => setForm({ ...form, link: e.target.value })}
+            placeholder="Onde a música foi publicada (Spotify, YouTube…)"
+          />
+          <p className="text-xs text-gray-400 mt-1">Ex.: https://open.spotify.com/track/… — aparece no botão "Ouvir" da faixa.</p>
         </div>
         <div>
           <label className="label">Letra</label>

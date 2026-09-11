@@ -104,6 +104,16 @@ class Track(Base):
     duration_seconds = Column(Integer, nullable=True)
     track_number = Column(Integer, nullable=True)
     lyrics = Column(Text, nullable=True)
+
+    # Audio MP3 da faixa (arquivo protegido)
+    audio_path = Column(String(500), nullable=True)  # caminho relativo em uploads/
+    audio_original_filename = Column(String(255), nullable=True)
+    audio_size = Column(Integer, nullable=True)
+    audio_mime = Column(String(100), nullable=True)
+
+    # Distribuicao: onde a musica foi publicada {streaming_url, spotify, youtube, ...}
+    links = Column(JSON, nullable=True)
+
     created_at = Column(DateTime, default=datetime.utcnow)
 
     project = relationship("Project", back_populates="tracks")
