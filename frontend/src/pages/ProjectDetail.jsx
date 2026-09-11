@@ -684,8 +684,8 @@ function TrackFormModal({ track, onClose, onSubmit, existingTracks }) {
           </div>
         </div>
         <div>
-          <label className="label">Duração (segundos)</label>
-          <input type="number" min="0" className="input" value={form.duration_seconds} onChange={(e) => setForm({ ...form, duration_seconds: e.target.value })} placeholder="Ex: 215" />
+          <label className="label">Duração</label>
+          <input type="text" className="input" value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} placeholder="Ex: 3:45, 2 min 30 s" />
         </div>
         <div>
           <label className="label">Link da letra</label>
