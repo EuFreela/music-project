@@ -5,18 +5,18 @@ NUNCA serve arquivos estaticamente. Todo acesso passa por
 autenticacao + verificacao de posse do projeto.
 """
 import os
-import uuid
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from fastapi.responses import FileResponse
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from database import get_db
 from models import Project, ProjectFile
 from schemas import ProjectFileResponse
 from security import get_current_admin
 from config import settings
+from upload_paths import project_folder, slugify
 
 router = APIRouter(prefix="/api/projects/{project_id}/files", tags=["files"], dependencies=[Depends(get_current_admin)])
 
@@ -37,7 +37,12 @@ def _detect_type(ext: str) -> str | None:
 
 
 def _check_project(db: Session, project_id: int) -> Project:
-    project = db.query(Project).filter(Project.id == project_id).first()
+    project = (
+        db.query(Project)
+        .options(selectinload(Project.artist_ref))
+        .filter(Project.id == project_id)
+        .first()
+    )
     if not project:
         raise HTTPException(status_code=404, detail="Projeto nao encontrado")
     return project
@@ -55,7 +60,7 @@ async def upload_file(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
 ):
-    _check_project(db, project_id)
+    project = _check_project(db, project_id)
 
     original_filename = file.filename or "arquivo"
     ext = os.path.splitext(original_filename)[1].lower()
@@ -70,12 +75,18 @@ async def upload_file(
     if len(content) > MAX_SIZE:
         raise HTTPException(status_code=400, detail="Arquivo muito grande (max 50MB)")
 
-    # Nome aleatorio via UUID - previne path traversal e colisao
-    stored_filename = f"{uuid.uuid4().hex}{ext}"
-
-    # Pasta protegida: uploads/{project_id}/
-    upload_path = os.path.join(settings.UPLOAD_DIR, str(project_id))
+    # Pasta legivel: uploads/<artista>/<album>/
+    # Nome legivel: nome_original_do_arquivo<ext> (com "_1", "_2"... se ja existir)
+    rel_folder = project_folder(project)
+    upload_path = os.path.join(settings.UPLOAD_DIR, rel_folder)
     os.makedirs(upload_path, exist_ok=True)
+
+    base = slugify(os.path.splitext(original_filename)[0], "arquivo")
+    stored_filename = f"{base}{ext}"
+    counter = 1
+    while os.path.exists(os.path.join(upload_path, stored_filename)):
+        stored_filename = f"{base}_{counter}{ext}"
+        counter += 1
     full_path = os.path.join(upload_path, stored_filename)
 
     with open(full_path, "wb") as f:

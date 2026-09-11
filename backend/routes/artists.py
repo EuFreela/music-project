@@ -2,7 +2,6 @@
 Rotas de artistas - CRUD completo + foto de perfil
 """
 import os
-import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from fastapi.responses import FileResponse
@@ -13,6 +12,7 @@ from models import Artist, Project
 from schemas import ArtistCreate, ArtistUpdate, ArtistResponse
 from security import get_current_admin
 from config import settings
+from upload_paths import artist_folder
 
 router = APIRouter(prefix="/api/artists", tags=["artists"], dependencies=[Depends(get_current_admin)])
 
@@ -102,8 +102,9 @@ async def upload_artist_image(
         if os.path.exists(old_path):
             os.remove(old_path)
 
-    stored_filename = f"{uuid.uuid4().hex}{ext}"
-    upload_path = os.path.join(settings.UPLOAD_DIR, "artists", str(artist_id))
+    # Pasta legivel: uploads/<artista>/foto<ext>
+    stored_filename = f"foto{ext}"
+    upload_path = os.path.join(settings.UPLOAD_DIR, artist_folder(artist))
     os.makedirs(upload_path, exist_ok=True)
     full_path = os.path.join(upload_path, stored_filename)
 

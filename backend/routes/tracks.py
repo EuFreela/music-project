@@ -2,17 +2,17 @@
 Rotas de faixas/musicas - CRUD por projeto + audio MP3 protegido
 """
 import os
-import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from fastapi.responses import FileResponse
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from database import get_db
 from models import Project, Track
 from schemas import TrackCreate, TrackUpdate, TrackResponse
 from security import get_current_admin
 from config import settings
+from upload_paths import project_folder, slugify
 
 router = APIRouter(prefix="/api/projects/{project_id}/tracks", tags=["tracks"], dependencies=[Depends(get_current_admin)])
 
@@ -20,7 +20,12 @@ AUDIO_EXTS = {".mp3", ".wav", ".flac", ".aac", ".ogg", ".m4a"}
 
 
 def _check_project(db: Session, project_id: int):
-    project = db.query(Project).filter(Project.id == project_id).first()
+    project = (
+        db.query(Project)
+        .options(selectinload(Project.artist_ref))
+        .filter(Project.id == project_id)
+        .first()
+    )
     if not project:
         raise HTTPException(status_code=404, detail="Projeto nao encontrado")
     return project
@@ -92,6 +97,7 @@ async def upload_track_audio(project_id: int, track_id: int, file: UploadFile = 
     extensao e conteudo nao-vazio.
     """
     track = _get_track(db, project_id, track_id)
+    project = _check_project(db, project_id)
 
     original_filename = file.filename or "audio"
     ext = os.path.splitext(original_filename)[1].lower()
@@ -102,18 +108,20 @@ async def upload_track_audio(project_id: int, track_id: int, file: UploadFile = 
     if len(content) == 0:
         raise HTTPException(status_code=400, detail="Arquivo vazio")
 
-    # Pasta protegida: uploads/{project_id}/
-    upload_path = os.path.join(settings.UPLOAD_DIR, str(project_id))
-    os.makedirs(upload_path, exist_ok=True)
-    stored_filename = f"track_{track_id}_{uuid.uuid4().hex}{ext}"
+    # Pasta legivel: uploads/<artista>/<album>/
+    # Nome legivel: <numero_da_faixa>_<titulo>.<ext> (ex.: 04_the_gateway_to_bunny_land.mp3)
+    rel_folder = project_folder(project)
+    numero = f"{track.track_number:02d}_" if track.track_number is not None else ""
+    stored_filename = f"{numero}{slugify(track.title, 'faixa')}{ext}"
 
     _remove_audio_file(track)  # substitui audio anterior
 
-    full_path = os.path.join(upload_path, stored_filename)
+    full_path = os.path.join(settings.UPLOAD_DIR, rel_folder, stored_filename)
+    os.makedirs(os.path.dirname(full_path), exist_ok=True)
     with open(full_path, "wb") as f:
         f.write(content)
 
-    track.audio_path = os.path.join(str(project_id), stored_filename)
+    track.audio_path = os.path.join(rel_folder, stored_filename)
     track.audio_original_filename = original_filename
     track.audio_size = len(content)
     track.audio_mime = file.content_type or "audio/mpeg"

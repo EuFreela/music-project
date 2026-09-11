@@ -2,7 +2,6 @@
 Rotas de projetos - CRUD completo
 """
 import os
-import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from fastapi.responses import FileResponse
@@ -13,6 +12,7 @@ from models import Project, ProjectStatus
 from schemas import ProjectCreate, ProjectUpdate, ProjectResponse
 from security import get_current_admin
 from config import settings
+from upload_paths import project_folder
 
 router = APIRouter(prefix="/api/projects", tags=["projects"], dependencies=[Depends(get_current_admin)])
 
@@ -126,8 +126,9 @@ async def upload_cover(
         if os.path.exists(old_path):
             os.remove(old_path)
 
-    stored_filename = f"{uuid.uuid4().hex}{ext}"
-    upload_path = os.path.join(settings.UPLOAD_DIR, "covers", str(project_id))
+    # Pasta legivel: uploads/<artista>/<album>/
+    stored_filename = f"capa{ext}"
+    upload_path = os.path.join(settings.UPLOAD_DIR, project_folder(project))
     os.makedirs(upload_path, exist_ok=True)
     full_path = os.path.join(upload_path, stored_filename)
 
