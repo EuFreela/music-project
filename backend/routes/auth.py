@@ -14,31 +14,39 @@ from seeder import finalize_login
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
-# Rate limit simples baseado em IP (na memoria)
+# Rate limit simples baseado em IP (na memoria): bloqueia apos 5 FALHAS / 5 min
 _login_attempts: dict[str, list[datetime]] = {}
 MAX_ATTEMPTS = 5
 LOCK_MINUTES = 5
 
 
-def check_rate_limit(ip: str):
-    """Permite 5 tentativas / 5 minutos por IP"""
+def _failed_attempts(ip: str) -> list[datetime]:
+    """Retorna as falhas recentes do IP, descartando as mais antigas que 5 min."""
     now = datetime.utcnow()
     attempts = [t for t in _login_attempts.get(ip, []) if t > now - timedelta(minutes=5)]
-
-    if len(attempts) >= MAX_ATTEMPTS:
-        raise HTTPException(
-            status_code=429,
-            detail="Muitas tentativas de login. Aguarde 5 minutos.",
-        )
-
-    attempts.append(now)
     _login_attempts[ip] = attempts
+    return attempts
+
+
+def register_failure(ip: str):
+    _login_attempts.setdefault(ip, []).append(datetime.utcnow())
+
+
+def clear_failures(ip: str):
+    """Login com sucesso zera as falhas registradas para o IP."""
+    _login_attempts.pop(ip, None)
 
 
 @router.post("/login")
 def login(request: LoginRequest, req: Request, db: Session = Depends(get_db)):
     ip = req.client.host if req.client else "unknown"
-    check_rate_limit(ip)
+
+    # Bloqueia somente por FALHAS recentes (logins de sucesso nao contam)
+    if len(_failed_attempts(ip)) >= MAX_ATTEMPTS:
+        raise HTTPException(
+            status_code=429,
+            detail="Muitas tentativas de login. Aguarde 5 minutos.",
+        )
 
     admin = db.query(Admin).first()
 
@@ -53,6 +61,7 @@ def login(request: LoginRequest, req: Request, db: Session = Depends(get_db)):
         )
 
     if admin.email != request.email or not verify_password(request.password, admin.password_hash):
+        register_failure(ip)
         admin.login_attempts += 1
         if admin.login_attempts >= 5:
             admin.locked_until = datetime.utcnow() + timedelta(minutes=LOCK_MINUTES)
@@ -60,7 +69,8 @@ def login(request: LoginRequest, req: Request, db: Session = Depends(get_db)):
         db.commit()
         raise HTTPException(status_code=401, detail="Email ou senha incorretos")
 
-    # Sucesso: gera token
+    # Sucesso: gera token e limpa falhas registradas para o IP
+    clear_failures(ip)
     token = create_access_token(subject="admin")
     finalize_login(db)
 
