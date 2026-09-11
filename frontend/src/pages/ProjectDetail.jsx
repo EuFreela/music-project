@@ -6,6 +6,7 @@ import StatusBadge, { RELEASE_TYPE_MAP } from '../components/UI/StatusBadge.jsx'
 import SecureImage from '../components/UI/SecureImage.jsx'
 import TrackAudio from '../components/UI/TrackAudio.jsx'
 import TrackLyrics from '../components/UI/TrackLyrics.jsx'
+import Markdown from '../components/UI/Markdown.jsx'
 
 const TABS = [
   { id: 'faixas', label: 'Faixas', icon: '🎵' },
@@ -445,10 +446,11 @@ export default function ProjectDetail() {
       {/* ---------- ABA GERAL ---------- */}
       {tab === 'geral' && (
         <div className="card p-6 space-y-4">
-          <h3 className="font-semibold">Notas e Observações</h3>
-          <p className="text-gray-600 dark:text-gray-400 whitespace-pre-wrap">
-            {project.notes || 'Nenhuma nota registrada ainda.'}
-          </p>
+          <h3 className="font-semibold">Sobre o Álbum</h3>
+          <Markdown>{project.description || 'Nenhuma descrição registrada ainda.'}</Markdown>
+
+          <h3 className="font-semibold pt-2 border-t border-light-border dark:border-dark-border">Notas e Observações</h3>
+          <Markdown>{project.notes || 'Nenhuma nota registrada ainda.'}</Markdown>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-light-border dark:border-dark-border text-center">
             <div>

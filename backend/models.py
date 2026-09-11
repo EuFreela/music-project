@@ -68,6 +68,7 @@ class Project(Base):
     release_platform = Column(String(255), nullable=True)  # Spotify, YouTube, etc
     release_date = Column(DateTime, nullable=True)
     status = Column(Enum(ProjectStatus), default=ProjectStatus.planejamento)
+    description = Column(Text, nullable=True)  # "Sobre o album" - descricao do projeto
     notes = Column(Text, nullable=True)
     cover_image_path = Column(String(500), nullable=True)
 

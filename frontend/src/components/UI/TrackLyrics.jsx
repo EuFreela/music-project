@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { InlineMarkdown } from './Markdown.jsx'
 
 /**
  * Leitura e edicao da letra + traducao de uma faixa.
@@ -78,10 +79,10 @@ export default function TrackLyrics({ track, onSave }) {
             {buildPairs(track.lyrics, track.translation).map(([left, right], i) => (
               <React.Fragment key={i}>
                 <div className="bg-white dark:bg-dark-card px-4 py-1.5 whitespace-pre-wrap leading-relaxed">
-                  {left || '\u00A0'}
+                  <InlineMarkdown text={left} />
                 </div>
                 <div className="bg-white dark:bg-dark-card px-4 py-1.5 whitespace-pre-wrap leading-relaxed text-gray-600 dark:text-dark-text-secondary">
-                  {right || '\u00A0'}
+                  <InlineMarkdown text={right} />
                 </div>
               </React.Fragment>
             ))}
@@ -113,6 +114,7 @@ export default function TrackLyrics({ track, onSave }) {
       {mode === 'edit' && (
         <p className="text-xs text-gray-400">
           💡 Mantenha as linhas na mesma ordem nas duas colunas para o modo leitura alinhar lado a lado.
+          Markdown inline: **negrito**, *itálico*, `código` e [link](url).
         </p>
       )}
     </div>

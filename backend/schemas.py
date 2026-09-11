@@ -115,6 +115,7 @@ class ProjectBase(BaseModel):
     release_platform: Optional[str] = None
     release_date: Optional[datetime] = None
     status: Optional[ProjectStatus] = ProjectStatus.planejamento
+    description: Optional[str] = None  # "Sobre o album"
     notes: Optional[str] = None
     cover_image_path: Optional[str] = None
     label: Optional[str] = None
@@ -138,6 +139,7 @@ class ProjectUpdate(BaseModel):
     release_platform: Optional[str] = None
     release_date: Optional[datetime] = None
     status: Optional[ProjectStatus] = None
+    description: Optional[str] = None
     notes: Optional[str] = None
     label: Optional[str] = None
     upc: Optional[str] = None

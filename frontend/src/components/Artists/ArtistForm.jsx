@@ -145,13 +145,13 @@ export default function ArtistForm({ open, onClose, artist, onSubmit }) {
         </div>
 
         <div>
-          <label className="label">Bio</label>
+          <label className="label">Sua história / Descrição</label>
           <textarea
             name="bio"
-            className="input min-h-[90px]"
+            className="input min-h-[110px]"
             value={form.bio}
             onChange={handleChange}
-            placeholder="Biografia, história, integrantes..."
+            placeholder={'Biografia, história do artista, integrantes... (Markdown: **negrito**, *itálico*, listas, [links](url))'}
           />
         </div>
 

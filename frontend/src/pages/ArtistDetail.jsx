@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import api from '../services/api.js'
 import SecureImage from '../components/UI/SecureImage.jsx'
 import StatusBadge from '../components/UI/StatusBadge.jsx'
+import Markdown from '../components/UI/Markdown.jsx'
 
 const PLATFORM_LABELS = {
   spotify: 'Spotify',
@@ -16,6 +17,32 @@ const PLATFORM_LABELS = {
   youtube_music: 'YouTube Music',
   amazon: 'Amazon Music',
   tidal: 'Tidal',
+}
+
+/**
+ * Biografia/descricao com Markdown e botao "Ver mais / Ver menos"
+ * quando o texto e longo (biografia expansivel).
+ */
+function ExpandableBio({ text }) {
+  const [open, setOpen] = useState(false)
+  if (!text) return null
+  const long = text.length > 260
+  return (
+    <div className="mt-3">
+      <div className={!open && long ? 'line-clamp-4' : ''}>
+        <Markdown>{text}</Markdown>
+      </div>
+      {long && (
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="mt-2 text-xs font-medium text-accent-500 hover:underline"
+        >
+          {open ? 'Ver menos ↑' : 'Ver mais ↓'}
+        </button>
+      )}
+    </div>
+  )
 }
 
 function ReleaseSection({ title, icon, releases }) {
@@ -108,9 +135,7 @@ export default function ArtistDetail() {
             <p className="text-sm text-gray-500 dark:text-gray-400">
               {[artist.genre, artist.country, artist.city].filter(Boolean).join(' • ') || 'Sem informações'}
             </p>
-            {artist.bio && (
-              <p className="mt-3 text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap">{artist.bio}</p>
-            )}
+            <ExpandableBio text={artist.bio} />
             {Object.keys(links).length > 0 && (
               <div className="flex flex-wrap gap-2 mt-4">
                 {Object.entries(links).map(([platform, url]) => {

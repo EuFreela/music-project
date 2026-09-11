@@ -12,6 +12,7 @@ const EMPTY_FORM = {
   release_platform: '',
   release_date: '',
   status: 'planejamento',
+  description: '',
   label: '',
   upc: '',
   distributed: false,
@@ -74,6 +75,7 @@ export default function ProjectForm({ open, onClose, project, onSubmit }) {
         release_platform: project.release_platform || '',
         release_date: project.release_date ? project.release_date.slice(0, 10) : '',
         status: project.status || 'planejamento',
+        description: project.description || '',
         label: project.label || '',
         upc: project.upc || '',
         distributed: project.distributed ?? false,
@@ -123,6 +125,7 @@ export default function ProjectForm({ open, onClose, project, onSubmit }) {
         release_platform: form.release_platform?.trim() || null,
         release_date: form.release_date ? new Date(form.release_date).toISOString() : null,
         status: form.status,
+        description: form.description?.trim() || null,
         label: form.label?.trim() || null,
         upc: form.upc?.trim() || null,
         distributed: Boolean(form.distributed),
@@ -333,13 +336,24 @@ export default function ProjectForm({ open, onClose, project, onSubmit }) {
         </div>
 
         <div>
+          <label className="label">Sobre o Álbum</label>
+          <textarea
+            name="description"
+            className="input min-h-[110px]"
+            value={form.description}
+            onChange={handleChange}
+            placeholder={'Descrição do álbum/EP/single: conceito, história... (Markdown: **negrito**, *itálico*, listas, [links](url))'}
+          />
+        </div>
+
+        <div>
           <label className="label">Notas/Observações</label>
           <textarea
             name="notes"
             className="input min-h-[80px]"
             value={form.notes}
             onChange={handleChange}
-            placeholder="Anotações, referências, ideias..."
+            placeholder={'Anotações, referências, ideias... (Markdown suportado)'}
           />
         </div>
       </form>
