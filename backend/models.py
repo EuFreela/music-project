@@ -74,6 +74,7 @@ class Project(Base):
 
     # Dados de distribuicao
     label = Column(String(255), nullable=True)  # gravadora
+    distributor = Column(String(255), nullable=True)  # distribuidora (ONErpm, DistroKid, TuneCore, ...)
     upc = Column(String(32), nullable=True)  # codigo de catalogo
     distributed = Column(Boolean, nullable=False, default=False, server_default=text("0"))
     links = Column(JSON, nullable=True)  # {spotify, apple_music, youtube, deezer, site, ...}
@@ -102,7 +103,7 @@ class Track(Base):
     project_id = Column(Integer, ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
     title = Column(String(255), nullable=False)
     isrc = Column(String(20), nullable=True)
-    duration_seconds = Column(Integer, nullable=True)
+    duration = Column(String(20), nullable=True)  # duracao em texto livre (ex.: "3:45")
     track_number = Column(Integer, nullable=True)
     lyrics = Column(Text, nullable=True)
     translation = Column(Text, nullable=True)  # traducao da letra (PT-BR)

@@ -14,6 +14,7 @@ const EMPTY_FORM = {
   status: 'planejamento',
   description: '',
   label: '',
+  distributor: '',
   upc: '',
   distributed: false,
   budget: '',
@@ -77,6 +78,7 @@ export default function ProjectForm({ open, onClose, project, onSubmit }) {
         status: project.status || 'planejamento',
         description: project.description || '',
         label: project.label || '',
+        distributor: project.distributor || '',
         upc: project.upc || '',
         distributed: project.distributed ?? false,
         budget: project.budget ?? '',
@@ -127,6 +129,7 @@ export default function ProjectForm({ open, onClose, project, onSubmit }) {
         status: form.status,
         description: form.description?.trim() || null,
         label: form.label?.trim() || null,
+        distributor: form.distributor?.trim() || null,
         upc: form.upc?.trim() || null,
         distributed: Boolean(form.distributed),
         links: Object.keys(links).length ? links : null,
@@ -234,7 +237,7 @@ export default function ProjectForm({ open, onClose, project, onSubmit }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="label">Gravadora/Label</label>
             <input
@@ -243,6 +246,16 @@ export default function ProjectForm({ open, onClose, project, onSubmit }) {
               value={form.label}
               onChange={handleChange}
               placeholder="Ex: Universal Music"
+            />
+          </div>
+          <div>
+            <label className="label">Distribuidora</label>
+            <input
+              name="distributor"
+              className="input"
+              value={form.distributor}
+              onChange={handleChange}
+              placeholder="Ex: ONErpm, DistroKid, TuneCore"
             />
           </div>
           <div>

@@ -58,7 +58,7 @@ class ArtistResponse(ArtistBase):
 class TrackBase(BaseModel):
     title: str
     isrc: Optional[str] = None
-    duration_seconds: Optional[int] = None
+    duration: Optional[str] = None  # texto livre (ex.: "3:45", "2 min 30")
     track_number: Optional[int] = None
     lyrics: Optional[str] = None
     translation: Optional[str] = None  # traducao da letra (PT-BR)
@@ -73,7 +73,7 @@ class TrackUpdate(BaseModel):
     """Atualizacao parcial - campos ausentes nao sao alterados."""
     title: Optional[str] = None
     isrc: Optional[str] = None
-    duration_seconds: Optional[int] = None
+    duration: Optional[str] = None
     track_number: Optional[int] = None
     lyrics: Optional[str] = None
     translation: Optional[str] = None
@@ -119,6 +119,7 @@ class ProjectBase(BaseModel):
     notes: Optional[str] = None
     cover_image_path: Optional[str] = None
     label: Optional[str] = None
+    distributor: Optional[str] = None  # distribuidora (ONErpm, DistroKid, TuneCore, ...)
     upc: Optional[str] = None
     distributed: Optional[bool] = False
     links: Optional[dict] = None
@@ -142,6 +143,7 @@ class ProjectUpdate(BaseModel):
     description: Optional[str] = None
     notes: Optional[str] = None
     label: Optional[str] = None
+    distributor: Optional[str] = None  # distribuidora
     upc: Optional[str] = None
     distributed: Optional[bool] = None
     links: Optional[dict] = None

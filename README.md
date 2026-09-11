@@ -76,9 +76,9 @@ Este sistema é essa **base central** — onde todo projeto musical tem seus dad
 |---|---|---|
 | 🎤 **Artistas** | Página do artista com foto, bio, redes sociais e todos os lançamentos organizados por **Álbuns, EPs e Singles** | |
 | 💿 **Capas** | Upload de capa por projeto e foto do artista — arquivos protegidos por autenticação | |
-| 🎵 **Faixas** | Número, duração, **letra + tradução** (EN \| PT lado a lado), **ISRC**, **áudio MP3** sem limite de tamanho e **link da letra** | |
+| 🎵 **Faixas** | Número, **duração em texto livre** (ex.: "3:45"), **letra + tradução** (EN \| PT lado a lado), **ISRC**, **áudio MP3** sem limite de tamanho e **link da letra** | |
 | 🌐 **Distribuição** | Links para Spotify, Apple Music, YouTube Music, Deezer, site e redes sociais + flag **"Distribuído"** | |
-| 🏷️ **Catálogo** | Gravadora (label), **UPC**, plataforma e data de lançamento | |
+| 🏷️ **Catálogo** | Gravadora (label), **distribuidora** (ex.: ONErpm, DistroKid), **UPC**, plataforma e data de lançamento | |
 | 💰 **Finanças** | Orçamento, receita e resultado por projeto | |
 | 👥 **Colaboradores** | Diretório de produtores, engenheiros e parceiros por projeto | |
 | 📁 **Arquivos** | Upload seguro de áudio, imagens e documentos (até 50MB, nunca servidos publicamente) | |
@@ -98,7 +98,7 @@ Cada projeto no sistema guarda **todos os dados necessários para o registro de 
 |---|---|
 | 🎤 **Artista** | Nome, foto, bio, gênero, cidade/estado e redes sociais |
 | 💿 **Identificação** | Nome do projeto, tipo (**Álbum, EP ou Single**), status, data de lançamento, capa e **"Sobre o Álbum"** (descrição em Markdown) |
-| 🏷️ **Catálogo** | Gravadora (label), **UPC** e plataforma de distribuição |
+| 🏷️ **Catálogo** | Gravadora (label), **distribuidora**, **UPC** e plataforma de distribuição |
 | 🎵 **Faixas** | Número, título, duração, **letra + tradução** (leitura multilíngue linha por linha), **ISRC**, **áudio MP3** (upload + player protegido, sem limite de tamanho) e **link da letra** |
 | 💰 **Finanças** | Orçamento, receita e resultado do projeto |
 | 👥 **Colaboradores** | Produtores, engenheiros e parceiros envolvidos |

@@ -56,12 +56,6 @@ export default function ProjectDetail() {
   useEffect(() => { loadProject() }, [loadProject])
 
   const formatDate = (d) => d ? new Date(d).toLocaleDateString('pt-BR') : '—'
-  const formatDuration = (sec) => {
-    if (!sec) return '—'
-    const m = Math.floor(sec / 60)
-    const s = sec % 60
-    return `${m}:${String(s).padStart(2, '0')}`
-  }
   const formatMoney = (v) => (Number(v) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
   const formatSize = (bytes) => {
     if (!bytes) return '—'
@@ -279,6 +273,11 @@ export default function ProjectDetail() {
                   🏷️ {project.label}
                 </span>
               )}
+              {project.distributor && (
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs border border-light-border dark:border-dark-border text-gray-600 dark:text-dark-text-secondary">
+                  📦 {project.distributor}
+                </span>
+              )}
               {project.upc && (
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-xs border border-light-border dark:border-dark-border text-gray-600 dark:text-dark-text-secondary">
                   UPC: {project.upc}
@@ -363,7 +362,7 @@ export default function ProjectDetail() {
                       <td className="px-4 py-3 text-gray-400">{track.track_number || '—'}</td>
                       <td className="px-4 py-3 font-medium">{track.title}</td>
                       <td className="px-4 py-3 text-gray-500 dark:text-gray-400 font-mono text-xs">{track.isrc || '—'}</td>
-                      <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{formatDuration(track.duration_seconds)}</td>
+                      <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{track.duration || '—'}</td>
                       <td className="px-4 py-3">
                         {track.audio_original_filename ? (
                           <div className="flex items-center gap-2 min-w-[170px]">
@@ -630,13 +629,13 @@ function TrackFormModal({ track, onClose, onSubmit, existingTracks }) {
   const [form, setForm] = useState(track ? {
     title: track.title || '',
     isrc: track.isrc || '',
-    duration_seconds: track.duration_seconds ?? '',
+    duration: track.duration || '',
     track_number: track.track_number ?? (existingTracks.length + 1),
     link: (track.links && (track.links.lyrics_url || track.links.streaming_url || track.links.spotify || track.links.youtube || '')) || '',
   } : {
     title: '',
     isrc: '',
-    duration_seconds: '',
+    duration: '',
     track_number: existingTracks.length + 1,
     link: '',
   })
@@ -651,7 +650,7 @@ function TrackFormModal({ track, onClose, onSubmit, existingTracks }) {
       await onSubmit({
         title: form.title.trim(),
         isrc: form.isrc?.trim() || null,
-        duration_seconds: form.duration_seconds === '' ? null : Number(form.duration_seconds),
+        duration: form.duration?.trim() || null,
         track_number: form.track_number === '' ? null : Number(form.track_number),
         links: form.link?.trim() ? { lyrics_url: form.link.trim() } : null,
       })
