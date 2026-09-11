@@ -5,6 +5,7 @@ import Modal from '../components/UI/Modal.jsx'
 import StatusBadge, { RELEASE_TYPE_MAP } from '../components/UI/StatusBadge.jsx'
 import SecureImage from '../components/UI/SecureImage.jsx'
 import TrackAudio from '../components/UI/TrackAudio.jsx'
+import TrackLyrics from '../components/UI/TrackLyrics.jsx'
 
 const TABS = [
   { id: 'faixas', label: 'Faixas', icon: '🎵' },
@@ -120,9 +121,19 @@ export default function ProjectDetail() {
     return deleteFile()
   }
 
-  const getTrackStreamUrl = (track) => {
+  const getTrackLyricsUrl = (track) => {
     const l = track.links || {}
-    return l.streaming_url || l.spotify || l.apple_music || l.youtube || l.youtube_music || l.deezer || null
+    return l.lyrics_url || l.streaming_url || l.spotify || l.youtube || l.youtube_music || l.deezer || null
+  }
+
+  // ---------- Letra & Traducao (painel de leitura, sem modal) ----------
+  const [lyricsTrackId, setLyricsTrackId] = useState(null)
+
+  const saveTrackLyrics = async (data) => {
+    const track = project.tracks.find((t) => t.id === lyricsTrackId)
+    if (!track) return
+    await api.put(`/projects/${id}/tracks/${track.id}`, { lyrics: data.lyrics, translation: data.translation })
+    loadProject()
   }
 
   // ---------- Colaboradores ----------
@@ -341,7 +352,7 @@ export default function ProjectDetail() {
                     <th className="px-4 py-3 font-medium">ISRC</th>
                     <th className="px-4 py-3 font-medium">Duração</th>
                     <th className="px-4 py-3 font-medium">Áudio</th>
-                    <th className="px-4 py-3 font-medium">Ouvir</th>
+                    <th className="px-4 py-3 font-medium">Letra</th>
                     <th className="px-4 py-3 font-medium text-right">Ações</th>
                   </tr>
                 </thead>
@@ -378,20 +389,27 @@ export default function ProjectDetail() {
                         )}
                       </td>
                       <td className="px-4 py-3">
-                        {getTrackStreamUrl(track) ? (
+                        {getTrackLyricsUrl(track) ? (
                           <a
-                            href={getTrackStreamUrl(track)}
+                            href={getTrackLyricsUrl(track)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border border-light-border dark:border-dark-border hover:border-accent-500/50 text-gray-600 dark:text-dark-text-secondary"
                           >
-                            🔗 Ouvir ↗
+                            📝 Letra ↗
                           </a>
                         ) : (
                           <span className="text-gray-400">—</span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-right whitespace-nowrap">
+                        <button
+                          className={`btn-ghost !py-1 !px-2 text-sm ${lyricsTrackId === track.id ? '!text-accent-500' : ''}`}
+                          onClick={() => setLyricsTrackId(lyricsTrackId === track.id ? null : track.id)}
+                          title="Ler/editar letra e tradução"
+                        >
+                          📖
+                        </button>
                         <button className="btn-ghost !py-1 !px-2 text-sm" onClick={() => setTrackModal(track)}>✏️</button>
                         <button className="btn-ghost !py-1 !px-2 text-sm hover:!text-red-500" onClick={() => setAskDelete({ type: 'track', item: track })}>🗑️</button>
                       </td>
@@ -401,6 +419,17 @@ export default function ProjectDetail() {
               </table>
             </div>
           )}
+
+          {lyricsTrackId && (() => {
+            const current = project.tracks.find((t) => t.id === lyricsTrackId)
+            if (!current) return null
+            return (
+              <TrackLyrics
+                track={current}
+                onSave={saveTrackLyrics}
+              />
+            )
+          })()}
 
           {trackModal && (
             <TrackFormModal
@@ -601,14 +630,12 @@ function TrackFormModal({ track, onClose, onSubmit, existingTracks }) {
     isrc: track.isrc || '',
     duration_seconds: track.duration_seconds ?? '',
     track_number: track.track_number ?? (existingTracks.length + 1),
-    lyrics: track.lyrics || '',
-    link: (track.links && (track.links.streaming_url || track.links.spotify || track.links.youtube || '')) || '',
+    link: (track.links && (track.links.lyrics_url || track.links.streaming_url || track.links.spotify || track.links.youtube || '')) || '',
   } : {
     title: '',
     isrc: '',
     duration_seconds: '',
     track_number: existingTracks.length + 1,
-    lyrics: '',
     link: '',
   })
   const [error, setError] = useState('')
@@ -624,8 +651,7 @@ function TrackFormModal({ track, onClose, onSubmit, existingTracks }) {
         isrc: form.isrc?.trim() || null,
         duration_seconds: form.duration_seconds === '' ? null : Number(form.duration_seconds),
         track_number: form.track_number === '' ? null : Number(form.track_number),
-        lyrics: form.lyrics,
-        links: form.link?.trim() ? { streaming_url: form.link.trim() } : null,
+        links: form.link?.trim() ? { lyrics_url: form.link.trim() } : null,
       })
     } catch (err) {
       setError(err.response?.data?.detail || 'Erro ao salvar faixa')
@@ -661,19 +687,15 @@ function TrackFormModal({ track, onClose, onSubmit, existingTracks }) {
           <input type="number" min="0" className="input" value={form.duration_seconds} onChange={(e) => setForm({ ...form, duration_seconds: e.target.value })} placeholder="Ex: 215" />
         </div>
         <div>
-          <label className="label">Link de distribuição</label>
+          <label className="label">Link da letra</label>
           <input
             type="url"
             className="input"
             value={form.link}
             onChange={(e) => setForm({ ...form, link: e.target.value })}
-            placeholder="Onde a música foi publicada (Spotify, YouTube…)"
+            placeholder="Onde a letra foi publicada (site de letras, YouTube…)"
           />
-          <p className="text-xs text-gray-400 mt-1">Ex.: https://open.spotify.com/track/… — aparece no botão "Ouvir" da faixa.</p>
-        </div>
-        <div>
-          <label className="label">Letra</label>
-          <textarea className="input min-h-[100px]" value={form.lyrics} onChange={(e) => setForm({ ...form, lyrics: e.target.value })} placeholder="Letra da música..." />
+          <p className="text-xs text-gray-400 mt-1">Ex.: https://www.letras.mus.br/… — aparece no botão "Letra" da faixa. A letra e a tradução são escritas no painel 📖.</p>
         </div>
         <div className="flex justify-end gap-2 pt-2">
           <button type="button" className="btn-secondary" onClick={onClose}>Cancelar</button>

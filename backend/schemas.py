@@ -61,11 +61,23 @@ class TrackBase(BaseModel):
     duration_seconds: Optional[int] = None
     track_number: Optional[int] = None
     lyrics: Optional[str] = None
-    links: Optional[dict] = None  # {streaming_url, spotify, youtube, ...}
+    translation: Optional[str] = None  # traducao da letra (PT-BR)
+    links: Optional[dict] = None  # {lyrics_url: onde a letra foi publicada}
 
 
 class TrackCreate(TrackBase):
     pass
+
+
+class TrackUpdate(BaseModel):
+    """Atualizacao parcial - campos ausentes nao sao alterados."""
+    title: Optional[str] = None
+    isrc: Optional[str] = None
+    duration_seconds: Optional[int] = None
+    track_number: Optional[int] = None
+    lyrics: Optional[str] = None
+    translation: Optional[str] = None
+    links: Optional[dict] = None
 
 
 class TrackResponse(TrackBase):

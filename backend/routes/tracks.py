@@ -10,14 +10,13 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from models import Project, Track
-from schemas import TrackCreate, TrackResponse
+from schemas import TrackCreate, TrackUpdate, TrackResponse
 from security import get_current_admin
 from config import settings
 
 router = APIRouter(prefix="/api/projects/{project_id}/tracks", tags=["tracks"], dependencies=[Depends(get_current_admin)])
 
 AUDIO_EXTS = {".mp3", ".wav", ".flac", ".aac", ".ogg", ".m4a"}
-MAX_AUDIO_SIZE = 50 * 1024 * 1024  # 50MB
 
 
 def _check_project(db: Session, project_id: int):
@@ -66,9 +65,9 @@ def create_track(project_id: int, data: TrackCreate, db: Session = Depends(get_d
 
 
 @router.put("/{track_id}", response_model=TrackResponse)
-def update_track(project_id: int, track_id: int, data: TrackCreate, db: Session = Depends(get_db)):
+def update_track(project_id: int, track_id: int, data: TrackUpdate, db: Session = Depends(get_db)):
     track = _get_track(db, project_id, track_id)
-    for field, value in data.model_dump().items():
+    for field, value in data.model_dump(exclude_unset=True).items():
         setattr(track, field, value)
     db.commit()
     db.refresh(track)
@@ -87,7 +86,11 @@ def delete_track(project_id: int, track_id: int, db: Session = Depends(get_db)):
 
 @router.post("/{track_id}/audio", response_model=TrackResponse, status_code=201)
 async def upload_track_audio(project_id: int, track_id: int, file: UploadFile = File(...), db: Session = Depends(get_db)):
-    """Upload do MP3 da faixa. Nome via UUID (anti path-traversal)."""
+    """Upload do MP3 da faixa. Nome via UUID (anti path-traversal).
+
+    Sistema local de organizacao: SEM limite de tamanho. Apenas valida
+    extensao e conteudo nao-vazio.
+    """
     track = _get_track(db, project_id, track_id)
 
     original_filename = file.filename or "audio"
@@ -98,8 +101,6 @@ async def upload_track_audio(project_id: int, track_id: int, file: UploadFile = 
     content = await file.read()
     if len(content) == 0:
         raise HTTPException(status_code=400, detail="Arquivo vazio")
-    if len(content) > MAX_AUDIO_SIZE:
-        raise HTTPException(status_code=400, detail="Arquivo muito grande (max 50MB)")
 
     # Pasta protegida: uploads/{project_id}/
     upload_path = os.path.join(settings.UPLOAD_DIR, str(project_id))

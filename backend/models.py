@@ -104,6 +104,7 @@ class Track(Base):
     duration_seconds = Column(Integer, nullable=True)
     track_number = Column(Integer, nullable=True)
     lyrics = Column(Text, nullable=True)
+    translation = Column(Text, nullable=True)  # traducao da letra (PT-BR)
 
     # Audio MP3 da faixa (arquivo protegido)
     audio_path = Column(String(500), nullable=True)  # caminho relativo em uploads/
