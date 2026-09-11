@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+backend/.env
+
+# Node
+node_modules/
+frontend/dist/
+
+# Uploads (NAO versionar arquivos enviados!)
+uploads/*
+!uploads/.gitkeep
+
+# Ambiente
+.env
+*.log
+
+# IDE
+.vscode/
+.idea/

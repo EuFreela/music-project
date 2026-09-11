@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply antialiased;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2;
+  }
+  .btn-primary {
+    @apply btn bg-accent-500 hover:bg-accent-600 text-white;
+  }
+  .btn-secondary {
+    @apply btn bg-gray-200 hover:bg-gray-300 text-gray-800 dark:bg-dark-card dark:hover:bg-dark-border dark:text-dark-text;
+  }
+  .btn-danger {
+    @apply btn bg-red-500 hover:bg-red-600 text-white;
+  }
+  .btn-ghost {
+    @apply btn text-gray-600 hover:bg-gray-100 dark:text-dark-text-secondary dark:hover:bg-dark-card;
+  }
+  .input {
+    @apply w-full px-3 py-2 rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card text-light-text dark:text-dark-text placeholder-light-text-secondary dark:placeholder-dark-text-secondary focus:outline-none focus:ring-2 focus:ring-accent-500;
+  }
+  .label {
+    @apply block text-sm font-medium text-gray-700 dark:text-dark-text-secondary mb-1;
+  }
+  .card {
+    @apply bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl shadow-sm;
+  }
+  .modal-overlay {
+    @apply fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4;
+  }
+  .modal-content {
+    @apply bg-white dark:bg-[#181818] rounded-2xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl border border-light-border dark:border-dark-border;
+  }
+}
