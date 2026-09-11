@@ -11,6 +11,8 @@ load_dotenv()
 class Settings:
     # Admin
     ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@musicproject.com")
+    # Se definida, a senha do admin e sincronizada com esse valor no startup
+    ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "")
 
     # JWT
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production-123456789")

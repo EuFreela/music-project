@@ -148,6 +148,8 @@ python -m uvicorn main:app --reload --port 8000
 
 > ⚠️ Na **1ª execução** as migrações Alembic criam as tabelas e o admin é criado automaticamente — a senha é mostrada no terminal. Anote!
 >
+> 💡 Dica: defina `ADMIN_EMAIL` **e `ADMIN_PASSWORD`** no `.env` — nesse caso o sistema **sincroniza essas credenciais no banco a cada startup** (o `.env` vira a fonte da verdade do login). Com `ADMIN_PASSWORD` vazio, a senha aleatória é gerada apenas na 1ª execução.
+>
 > O startup executa `alembic upgrade head` sozinho. Você só precisa rodar o `uvicorn` — nada de `create_all` manual.
 
 ### 3. Frontend
@@ -284,6 +286,7 @@ Autenticação via `Authorization: Bearer <token>`.
 | Variável | Default | Descrição |
 |---|---|---|
 | `ADMIN_EMAIL` | `admin@musicproject.com` | E-mail do admin (senha gerada na 1ª execução) |
+| `ADMIN_PASSWORD` | *(vazio)* | Se definida, a senha do admin é sincronizada com este valor a cada startup (junto com `ADMIN_EMAIL`) |
 | `SECRET_KEY` | *(exemplo)* | **Troque** por valor aleatório em produção |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | `1440` | Expiração do JWT em minutos |
 | `DB_HOST/DB_PORT/DB_USER/DB_PASSWORD/DB_NAME` | `localhost/3306/root//music_project` | Conexão MySQL |
