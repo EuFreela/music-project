@@ -389,9 +389,13 @@ export default function ProjectDetail() {
       {tab === 'faixas' && (
         <div className="space-y-4">
           <div className="flex justify-end">
-            <button className="btn-primary !py-1.5 !px-3 text-sm" onClick={() => setTrackModal({})}>
-              + Adicionar Faixa
-            </button>
+              <button
+                className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-accent-500 text-white text-xl font-semibold leading-none hover:bg-accent-600 transition-colors shadow-sm"
+                onClick={() => setTrackModal({})}
+                title="Adicionar faixa"
+              >
+                +
+              </button>
           </div>
 
           {project.tracks.length === 0 ? (
@@ -472,17 +476,32 @@ export default function ProjectDetail() {
                         ) : (
                           <span className="text-gray-400">—</span>
                         )}
+                        ) : (
+                          <span className="text-gray-400">—</span>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-right whitespace-nowrap">
                         <button
-                          className={`btn-ghost !py-1 !px-2 text-sm ${lyricsTrackId === track.id ? '!text-accent-500' : ''}`}
+                          className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-light-border dark:border-dark-border hover:border-accent-500/50 hover:text-accent-500 text-sm"
                           onClick={() => setLyricsTrackId(lyricsTrackId === track.id ? null : track.id)}
                           title="Ler/editar letra e tradução"
                         >
                           📖
                         </button>
-                        <button className="btn-ghost !py-1 !px-2 text-sm" onClick={() => setTrackModal(track)}>✏️</button>
-                        <button className="btn-ghost !py-1 !px-2 text-sm hover:!text-red-500" onClick={() => setAskDelete({ type: 'track', item: track })}>🗑️</button>
+                        <button
+                          className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-light-border dark:border-dark-border hover:border-accent-500/50 hover:text-accent-500 text-sm"
+                          onClick={() => setTrackModal(track)}
+                          title="Editar faixa"
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-light-border dark:border-dark-border hover:border-red-500/50 hover:text-red-500 text-sm"
+                          onClick={() => setAskDelete({ type: 'track', item: track })}
+                          title="Excluir faixa"
+                        >
+                          🗑️
+                        </button>
                       </td>
                     </tr>
                   ))}
