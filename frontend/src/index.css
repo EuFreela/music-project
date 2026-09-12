@@ -37,8 +37,47 @@
     @apply fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4;
   }
   .modal-content {
-    @apply bg-white dark:bg-[#181818] rounded-2xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl border border-light-border dark:border-dark-border;
+    @apply bg-white dark:bg-[#181818] rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-light-border dark:border-dark-border;
   }
+}
+
+/* ---------- Scrollbars (combinando com o tema) ---------- */
+:root {
+  --scrollbar-track: rgba(0, 0, 0, 0.03);
+  --scrollbar-thumb: rgba(168, 85, 247, 0.3);
+  --scrollbar-thumb-hover: rgba(168, 85, 247, 0.5);
+}
+.dark {
+  --scrollbar-track: rgba(255, 255, 255, 0.04);
+  --scrollbar-thumb: rgba(192, 132, 252, 0.28);
+  --scrollbar-thumb-hover: rgba(192, 132, 252, 0.5);
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
 
 /* ---------- Markdown (textos descritivos) ---------- */
