@@ -4,7 +4,7 @@ import ThemeToggle from './ThemeToggle.jsx'
 import SecureImage from '../UI/SecureImage.jsx'
 import api from '../../services/api.js'
 
-const DICEBEAR_BASE = 'https://api.dicebear.com/9.x/lorelei/svg'
+const DICEBEAR_BASE = 'https://api.dicebear.com/9.x/clay/svg'
 
 export default function Navbar({ onMenuClick }) {
   const [profile, setProfile] = useState(null)

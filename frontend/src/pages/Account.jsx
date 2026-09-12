@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import api from '../services/api.js'
 import SecureImage from '../components/UI/SecureImage.jsx'
 
-const DICEBEAR_BASE = 'https://api.dicebear.com/9.x/lorelei/svg'
+const DICEBEAR_BASE = 'https://api.dicebear.com/9.x/clay/svg'
 const AVATAR_SEEDS = ['Lia', 'Maya', 'Nina', 'Aria', 'Zoe', 'Bella', 'Luna', 'Ivy', 'Mila', 'Sofia']
 
 function dicebearUrl(seed) {
