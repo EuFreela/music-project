@@ -254,7 +254,7 @@ export default function ProjectDetail() {
     <div className="max-w-5xl mx-auto space-y-6">
       {/* Cabecalho */}
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <Link to="/" className="btn-ghost !px-3 !py-1.5 text-sm">← Voltar</Link>
+        <Link to={project.artist_ref ? `/artists/${project.artist_ref.id}` : '/'} className="btn-ghost !px-3 !py-1.5 text-sm">← Voltar</Link>
         <StatusBadge status={project.status} />
       </div>
 
