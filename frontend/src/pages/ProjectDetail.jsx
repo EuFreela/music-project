@@ -5,7 +5,7 @@ import Modal from '../components/UI/Modal.jsx'
 import StatusBadge, { RELEASE_TYPE_MAP } from '../components/UI/StatusBadge.jsx'
 import SecureImage from '../components/UI/SecureImage.jsx'
 import TrackAudio from '../components/UI/TrackAudio.jsx'
-import TrackLyrics from '../components/UI/TrackLyrics.jsx'
+import TrackViewModal from '../components/UI/TrackViewModal.jsx'
 import Markdown from '../components/UI/Markdown.jsx'
 
 const TABS = [
@@ -28,22 +28,6 @@ const PLATFORM_LABELS = {
   instagram: 'Instagram',
   facebook: 'Facebook',
   tiktok: 'TikTok',
-}
-
-/* Extrai o ID de um video do YouTube a partir de varios formatos de URL:
-   watch?v=ID, youtu.be/ID, shorts/ID, live/ID, embed/ID */
-function getYoutubeId(url) {
-  if (!url) return null
-  try {
-    const u = new URL(url)
-    if (u.hostname.includes('youtube.com')) {
-      if (u.pathname === '/watch') return u.searchParams.get('v')
-      const m = u.pathname.match(/\/(?:embed|shorts|live)\/([\w-]{6,})/)
-      return m ? m[1] : null
-    }
-    if (u.hostname === 'youtu.be') return (u.pathname.slice(1).split('/')[0]) || null
-  } catch { /* URL invalida */ }
-  return null
 }
 
 /* Converte duracoes em texto livre para segundos (ex.: "3:45", "2 min 30 s") */
@@ -158,25 +142,10 @@ export default function ProjectDetail() {
     return deleteFile()
   }
 
-  const getTrackLyricsUrl = (track) => {
-    const l = track.links || {}
-    return l.lyrics_url || l.streaming_url || l.spotify || l.youtube || l.youtube_music || l.deezer || null
-  }
-
   const getTrackClipUrl = (track) => (track.links || {}).clip || null
 
-  // ---------- Letra & Traducao (painel de leitura, sem modal) ----------
-  const [lyricsTrackId, setLyricsTrackId] = useState(null)
-
-  // ---------- Clipe musical (player em modal por faixa) ----------
-  const [clipTrackId, setClipTrackId] = useState(null)
-
-  const saveTrackLyrics = async (data) => {
-    const track = project.tracks.find((t) => t.id === lyricsTrackId)
-    if (!track) return
-    await api.put(`/projects/${id}/tracks/${track.id}`, { lyrics: data.lyrics, translation: data.translation })
-    loadProject()
-  }
+  // ---------- Modal de visualizacao da faixa (Letra / Clipe / Infos) ----------
+  const [viewTrack, setViewTrack] = useState(null)   // {id, tab} | null
 
   // ---------- Colaboradores ----------
   const saveCollab = async (data) => {
@@ -415,7 +384,6 @@ export default function ProjectDetail() {
                     <th className="px-4 py-3 font-medium">ISRC</th>
                     <th className="px-4 py-3 font-medium">Duração</th>
                     <th className="px-4 py-3 font-medium">Áudio</th>
-                    <th className="px-4 py-3 font-medium">Letra</th>
                     <th className="px-4 py-3 font-medium">Clipe</th>
                     <th className="px-4 py-3 font-medium text-right">Ações</th>
                   </tr>
@@ -424,7 +392,18 @@ export default function ProjectDetail() {
                   {sortedTracks.map((track) => (
                     <tr key={track.id} className="hover:bg-gray-50 dark:hover:bg-dark-card">
                       <td className="px-4 py-3 text-gray-400">{track.track_number || '—'}</td>
-                      <td className="px-4 py-3 font-medium">{track.title}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <button
+                            className="inline-flex items-center justify-center w-8 h-8 shrink-0 rounded-full border border-light-border dark:border-dark-border hover:border-accent-500/50 hover:text-accent-500 text-gray-600 dark:text-dark-text-secondary"
+                            onClick={() => setViewTrack({ id: track.id, tab: 'letra' })}
+                            title="Ver detalhes da faixa"
+                          >
+                            👁️
+                          </button>
+                          <span className="font-medium break-words">{track.title}</span>
+                        </div>
+                      </td>
                       <td className="px-4 py-3 text-gray-500 dark:text-gray-400 font-mono text-xs">{track.isrc || '—'}</td>
                       <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{track.duration || '—'}</td>
                       <td className="px-4 py-3">
@@ -453,25 +432,10 @@ export default function ProjectDetail() {
                         )}
                       </td>
                       <td className="px-4 py-3">
-                        {getTrackLyricsUrl(track) ? (
-                          <a
-                            href={getTrackLyricsUrl(track)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title="Abrir letra"
-                            className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-light-border dark:border-dark-border hover:border-accent-500/50 text-gray-600 dark:text-dark-text-secondary"
-                          >
-                            📝
-                          </a>
-                        ) : (
-                          <span className="text-gray-400">—</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
                         {getTrackClipUrl(track) ? (
                           <button
                             className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-light-border dark:border-dark-border hover:border-accent-500/50 hover:text-accent-500 text-gray-600 dark:text-dark-text-secondary"
-                            onClick={() => setClipTrackId(track.id)}
+                            onClick={() => setViewTrack({ id: track.id, tab: 'clipe' })}
                             title="Assistir clipe"
                           >
                             ▶
@@ -481,13 +445,6 @@ export default function ProjectDetail() {
                         )}
                       </td>
                       <td className="px-4 py-3 text-right whitespace-nowrap">
-                        <button
-                          className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-light-border dark:border-dark-border hover:border-accent-500/50 hover:text-accent-500 text-sm"
-                          onClick={() => setLyricsTrackId(lyricsTrackId === track.id ? null : track.id)}
-                          title="Ler/editar letra e tradução"
-                        >
-                          📖
-                        </button>
                         <button
                           className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-light-border dark:border-dark-border hover:border-accent-500/50 hover:text-accent-500 text-sm"
                           onClick={() => setTrackModal(track)}
@@ -531,10 +488,10 @@ export default function ProjectDetail() {
                     <div className="flex items-center gap-1 shrink-0">
                       <button
                         className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-light-border dark:border-dark-border hover:border-accent-500/50 hover:text-accent-500 text-sm"
-                        onClick={() => setLyricsTrackId(lyricsTrackId === track.id ? null : track.id)}
-                        title="Ler/editar letra e tradução"
+                        onClick={() => setViewTrack({ id: track.id, tab: 'letra' })}
+                        title="Ver detalhes da faixa"
                       >
-                        📖
+                        👁️
                       </button>
                       <button
                         className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-light-border dark:border-dark-border hover:border-accent-500/50 hover:text-accent-500 text-sm"
@@ -578,33 +535,22 @@ export default function ProjectDetail() {
                   )}
 
                   <div className="flex items-center gap-2 flex-wrap border-t border-light-border dark:border-dark-border pt-3 mt-3">
-                    {getTrackLyricsUrl(track) ? (
-                      <a
-                        href={getTrackLyricsUrl(track)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border border-light-border dark:border-dark-border hover:border-accent-500/50 text-xs text-gray-600 dark:text-dark-text-secondary"
-                      >
-                        📝 Letra
-                      </a>
-                    ) : (
-                      <button
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border border-light-border dark:border-dark-border hover:border-accent-500/50 text-xs text-gray-400"
-                        onClick={() => setLyricsTrackId(lyricsTrackId === track.id ? null : track.id)}
-                        title="Adicionar link da letra"
-                      >
-                        📝 Sem letra
-                      </button>
-                    )}
                     {getTrackClipUrl(track) && (
                       <button
                         className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border border-light-border dark:border-dark-border hover:border-accent-500/50 hover:text-accent-500 text-xs text-gray-600 dark:text-dark-text-secondary"
-                        onClick={() => setClipTrackId(track.id)}
+                        onClick={() => setViewTrack({ id: track.id, tab: 'clipe' })}
                         title="Assistir clipe"
                       >
                         ▶ Clipe
                       </button>
                     )}
+                    <button
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border border-light-border dark:border-dark-border hover:border-accent-500/50 hover:text-accent-500 text-xs text-gray-600 dark:text-dark-text-secondary"
+                      onClick={() => setViewTrack({ id: track.id, tab: 'infos' })}
+                      title="Ver informações da criação (IA)"
+                    >
+                      🤖 Infos
+                    </button>
                   </div>
                   </div>
                 </div>
@@ -613,34 +559,16 @@ export default function ProjectDetail() {
             </>
           )}
 
-          {lyricsTrackId && (() => {
-            const current = project.tracks.find((t) => t.id === lyricsTrackId)
+          {viewTrack && (() => {
+            const current = project.tracks.find((t) => t.id === viewTrack.id)
             if (!current) return null
             return (
-              <TrackLyrics
+              <TrackViewModal
                 track={current}
-                onSave={saveTrackLyrics}
+                projectId={id}
+                initialTab={viewTrack.tab || 'letra'}
+                onClose={() => setViewTrack(null)}
               />
-            )
-          })()}
-
-          {clipTrackId && (() => {
-            const current = project.tracks.find((t) => t.id === clipTrackId)
-            const clipId = current ? getYoutubeId(getTrackClipUrl(current)) : null
-            if (!current || !clipId) return null
-            return (
-              <Modal title={`🎬 ${current.title} — Clipe`} onClose={() => setClipTrackId(null)}>
-                <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black">
-                  <iframe
-                    className="absolute inset-0 w-full h-full"
-                    src={`https://www.youtube.com/embed/${clipId}`}
-                    title={`Clipe de ${current.title}`}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    referrerPolicy="strict-origin-when-cross-origin"
-                    allowFullScreen
-                  />
-                </div>
-              </Modal>
             )
           })()}
 
@@ -921,6 +849,11 @@ function TrackFormModal({ track, onClose, onSubmit, existingTracks }) {
     track_number: track.track_number ?? (existingTracks.length + 1),
     link: (track.links && (track.links.lyrics_url || track.links.streaming_url || track.links.spotify || track.links.youtube || '')) || '',
     clip: (track.links && track.links.clip) || '',
+    ai_assisted: track.ai_assisted ?? false,
+    ai_platform: track.ai_platform || '',
+    lyrics_original: track.lyrics_original || '',
+    style_positive: track.style_positive || '',
+    style_negative: track.style_negative || '',
   } : {
     title: '',
     isrc: '',
@@ -928,6 +861,11 @@ function TrackFormModal({ track, onClose, onSubmit, existingTracks }) {
     track_number: existingTracks.length + 1,
     link: '',
     clip: '',
+    ai_assisted: false,
+    ai_platform: '',
+    lyrics_original: '',
+    style_positive: '',
+    style_negative: '',
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -949,6 +887,11 @@ function TrackFormModal({ track, onClose, onSubmit, existingTracks }) {
         duration: form.duration?.trim() || null,
         track_number: form.track_number === '' ? null : Number(form.track_number),
         links: Object.keys(links).length ? links : null,
+        ai_assisted: form.ai_assisted,
+        ai_platform: form.ai_platform?.trim() || null,
+        lyrics_original: form.lyrics_original?.trim() || null,
+        style_positive: form.style_positive?.trim() || null,
+        style_negative: form.style_negative?.trim() || null,
       })
     } catch (err) {
       setError(err.response?.data?.detail || 'Erro ao salvar faixa')
@@ -1003,8 +946,65 @@ function TrackFormModal({ track, onClose, onSubmit, existingTracks }) {
             onChange={(e) => setForm({ ...form, clip: e.target.value })}
             placeholder="https://www.youtube.com/watch?v=..."
           />
-          <p className="text-xs text-gray-400 mt-1">Se a música tiver clipe, cole o link aqui — ele aparece no botão "▶ Clipe" na lista de faixas. Aceita youtu.be/..., shorts e watch?v=... .</p>
+          <p className="text-xs text-gray-400 mt-1">Se a música tiver clipe, cole o link aqui — ele aparece na coluna Clipe da lista de faixas e no modal 👁️. Aceita youtu.be/..., shorts e watch?v=... .</p>
         </div>
+
+        {/* ---------- Criacao com IA ---------- */}
+        <div className="border border-light-border dark:border-dark-border rounded-xl p-4 space-y-4">
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={form.ai_assisted}
+              onChange={(e) => setForm({ ...form, ai_assisted: e.target.checked })}
+              className="w-4 h-4 accent-accent-500"
+            />
+            <span className="text-sm font-medium text-light-text dark:text-dark-text">
+              ✨ Faixa criada/auxiliada por plataforma de música de IA
+            </span>
+          </label>
+
+          <div>
+            <label className="label">Plataforma de música IA</label>
+            <input
+              className="input"
+              value={form.ai_platform}
+              onChange={(e) => setForm({ ...form, ai_platform: e.target.value })}
+              placeholder="Ex: Suno, Udio, AIVA…"
+            />
+          </div>
+
+          <div>
+            <label className="label">Letra original definida</label>
+            <textarea
+              className="input min-h-[80px] font-mono text-xs leading-relaxed"
+              value={form.lyrics_original}
+              onChange={(e) => setForm({ ...form, lyrics_original: e.target.value })}
+              placeholder="A letra como foi definida originalmente, mantendo linhas e espaçamento…"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="label">Prompt positivo</label>
+              <textarea
+                className="input min-h-[80px] font-mono text-xs leading-relaxed"
+                value={form.style_positive}
+                onChange={(e) => setForm({ ...form, style_positive: e.target.value })}
+                placeholder="Como a faixa deve soar: uptempo, synth pop, vocal feminino…"
+              />
+            </div>
+            <div>
+              <label className="label">Prompt negativo</label>
+              <textarea
+                className="input min-h-[80px] font-mono text-xs leading-relaxed"
+                value={form.style_negative}
+                onChange={(e) => setForm({ ...form, style_negative: e.target.value })}
+                placeholder="O que evitar: sem auto-tune, sem guitarras pesadas…"
+              />
+            </div>
+          </div>
+        </div>
+
         <div className="flex justify-end gap-2 pt-2">
           <button type="button" className="btn-secondary" onClick={onClose}>Cancelar</button>
           <button type="submit" className="btn-primary" disabled={loading}>{loading ? 'Salvando...' : 'Salvar'}</button>
