@@ -1,8 +1,21 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import ThemeToggle from './ThemeToggle.jsx'
+import SecureImage from '../UI/SecureImage.jsx'
+import api from '../../services/api.js'
+
+const DICEBEAR_BASE = 'https://api.dicebear.com/9.x/lorelei/svg'
 
 export default function Navbar({ onMenuClick }) {
-  const email = localStorage.getItem('adminEmail') || 'Admin'
+  const [profile, setProfile] = useState(null)
+
+  useEffect(() => {
+    api.get('/auth/me')
+      .then(({ data }) => setProfile(data))
+      .catch(() => {})
+  }, [])
+
+  const email = profile?.email || localStorage.getItem('adminEmail') || 'Admin'
 
   const handleLogout = () => {
     localStorage.removeItem('token')
@@ -49,12 +62,33 @@ export default function Navbar({ onMenuClick }) {
         <div className="flex items-center gap-2">
           <ThemeToggle />
           <div className="hidden sm:flex items-center gap-3 pl-2 border-l border-light-border dark:border-dark-border">
-            <div className="w-8 h-8 rounded-full bg-accent-500 flex items-center justify-center text-white font-semibold text-sm">
-              {email.charAt(0).toUpperCase()}
-            </div>
-            <div className="hidden sm:block">
-              <p className="text-sm font-medium text-light-text dark:text-dark-text">{email}</p>
-            </div>
+            <Link
+              to="/conta"
+              title="Minha conta"
+              className="flex items-center gap-3 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-card px-2 py-1"
+            >
+              {profile?.avatar_seed ? (
+                <img
+                  src={`${DICEBEAR_BASE}?seed=${encodeURIComponent(profile.avatar_seed)}`}
+                  alt="Avatar"
+                  className="w-8 h-8 rounded-full object-cover"
+                />
+              ) : profile?.avatar_path ? (
+                <SecureImage
+                  src="/api/auth/avatar"
+                  alt="Avatar"
+                  className="w-8 h-8 rounded-full object-cover"
+                  fallback="👤"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-accent-500 flex items-center justify-center text-white font-semibold text-sm">
+                  {email.charAt(0).toUpperCase()}
+                </div>
+              )}
+              <span className="hidden sm:block">
+                <p className="text-sm font-medium text-light-text dark:text-dark-text">{email}</p>
+              </span>
+            </Link>
             <button
               onClick={handleLogout}
               className="btn-ghost !px-3 !py-1.5 text-sm inline-flex items-center gap-1.5"

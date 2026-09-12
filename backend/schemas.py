@@ -13,6 +13,30 @@ class LoginRequest(BaseModel):
     password: str
 
 
+class AdminMe(BaseModel):
+    """Perfil do admin (área "Minha conta")."""
+    model_config = ConfigDict(from_attributes=True)
+    email: str
+    avatar_seed: Optional[str] = None
+    avatar_path: Optional[str] = None
+
+
+class AdminUpdateEmail(BaseModel):
+    """Troca de e-mail exige a senha atual (confirmação)."""
+    email: str
+    password: str
+
+
+class AdminChangePassword(BaseModel):
+    current_password: str
+    new_password: str
+
+
+class AdminAvatarSeed(BaseModel):
+    """Avatar pré-definido (DiceBear Lorelei) - seed vazio/null remove."""
+    avatar_seed: Optional[str] = None
+
+
 # ---------- Artists ----------
 class ArtistBase(BaseModel):
     name: str

@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard.jsx'
 import ProjectDetail from './pages/ProjectDetail.jsx'
 import Artists from './pages/Artists.jsx'
 import ArtistDetail from './pages/ArtistDetail.jsx'
+import Account from './pages/Account.jsx'
 import Layout from './components/Layout/Layout.jsx'
 
 // Componente que protege rotas (verifica token)
@@ -27,6 +28,7 @@ export default function App() {
         }
       >
         <Route index element={<Dashboard />} />
+        <Route path="conta" element={<Account />} />
         <Route path="projects/:id" element={<ProjectDetail />} />
         <Route path="artists" element={<Artists />} />
         <Route path="artists/:id" element={<ArtistDetail />} />

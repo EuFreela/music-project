@@ -40,3 +40,8 @@ def project_folder(project) -> str:
 def artist_folder(artist) -> str:
     """Caminho relativo (a partir de uploads/) da pasta do artista."""
     return slugify(artist.name, "artista")
+
+
+def admin_folder() -> str:
+    """Caminho relativo (a partir de uploads/) da pasta do admin (avatar)."""
+    return "admins"
