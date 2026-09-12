@@ -10,9 +10,16 @@ export default function Navbar({ onMenuClick }) {
   const [profile, setProfile] = useState(null)
 
   useEffect(() => {
-    api.get('/auth/me')
-      .then(({ data }) => setProfile(data))
-      .catch(() => {})
+    const loadProfile = () => {
+      api.get('/auth/me')
+        .then(({ data }) => setProfile(data))
+        .catch(() => {})
+    }
+    loadProfile()
+
+    // Atualiza em tempo real quando o perfil/avatar muda (Conte a pagina "Minha conta")
+    window.addEventListener('admin-profile-updated', loadProfile)
+    return () => window.removeEventListener('admin-profile-updated', loadProfile)
   }, [])
 
   const email = profile?.email || localStorage.getItem('adminEmail') || 'Admin'

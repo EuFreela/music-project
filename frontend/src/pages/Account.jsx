@@ -42,6 +42,11 @@ export default function Account() {
     setAvatarMsg({ type, text })
     setTimeout(() => setAvatarMsg(null), 4000)
   }
+
+  // Notifica a Navbar (e outros consumidores) que o avatar/perfil mudou
+  const notifyProfileUpdated = () => {
+    window.dispatchEvent(new CustomEvent('admin-profile-updated'))
+  }
   const showEmailMsg = (type, text) => {
     setEmailMsg({ type, text })
     setTimeout(() => setEmailMsg(null), 4000)
@@ -57,6 +62,8 @@ export default function Account() {
     try {
       const { data } = await api.put('/auth/avatar', { avatar_seed: selectedSeed })
       setProfile(data)
+      setSelectedSeed(null)
+      notifyProfileUpdated()
       showAvatarMsg('success', 'Avatar atualizado!')
     } catch (err) {
       showAvatarMsg('error', err.response?.data?.detail || 'Erro ao salvar avatar')
@@ -65,7 +72,10 @@ export default function Account() {
 
   const handleUpload = async (e) => {
     const file = e.target.files?.[0]
-    if (!file) return
+    if (!file) {
+      e.target.value = ''
+      return
+    }
     setUploading(true)
     const fd = new FormData()
     fd.append('file', file)
@@ -75,6 +85,7 @@ export default function Account() {
       })
       setProfile(data)
       setSelectedSeed(null)
+      notifyProfileUpdated()
       showAvatarMsg('success', 'Avatar atualizado!')
     } catch (err) {
       showAvatarMsg('error', err.response?.data?.detail || 'Erro ao enviar imagem')
