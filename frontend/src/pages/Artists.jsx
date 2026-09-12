@@ -68,8 +68,13 @@ export default function Artists() {
           <h1 className="text-2xl font-bold">Artistas</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">Gerencie artistas e seus lançamentos</p>
         </div>
-        <button onClick={() => { setEditing(null); setFormOpen(true) }} className="btn-primary">
-          + Novo Artista
+        <button
+          onClick={() => { setEditing(null); setFormOpen(true) }}
+          className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-accent-500 text-white text-xl font-semibold leading-none hover:bg-accent-600 transition-colors shadow-sm"
+          title="Novo Artista"
+          aria-label="Novo Artista"
+        >
+          +
         </button>
       </div>
 
@@ -129,14 +134,14 @@ export default function Artists() {
                 <div className="flex items-center justify-end gap-1 px-5 pb-4">
                   <button
                     onClick={() => { setEditing(artist); setFormOpen(true) }}
-                    className="btn-ghost !py-1.5 !px-2.5 text-sm"
+                    className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-light-border dark:border-dark-border hover:border-accent-500/50 hover:text-accent-500 text-gray-600 dark:text-dark-text-secondary"
                     title="Editar"
                   >
                     ✏️
                   </button>
                   <button
                     onClick={() => setAskDelete(artist)}
-                    className="btn-ghost !py-1.5 !px-2.5 text-sm hover:!bg-red-500/10 hover:!text-red-500"
+                    className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-light-border dark:border-dark-border hover:border-red-500/50 hover:text-red-500 text-gray-600 dark:text-dark-text-secondary"
                     title="Excluir"
                   >
                     🗑️

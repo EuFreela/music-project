@@ -73,8 +73,13 @@ export default function Dashboard() {
           <h1 className="text-2xl font-bold">Dashboard</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">Gerencie seus projetos musicais</p>
         </div>
-        <button onClick={() => { setEditing(null); setFormOpen(true) }} className="btn-primary">
-          + Novo Projeto
+        <button
+          onClick={() => { setEditing(null); setFormOpen(true) }}
+          className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-accent-500 text-white text-xl font-semibold leading-none hover:bg-accent-600 transition-colors shadow-sm"
+          title="Novo Projeto"
+          aria-label="Novo Projeto"
+        >
+          +
         </button>
       </div>
 

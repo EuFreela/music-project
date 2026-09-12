@@ -80,26 +80,28 @@ export default function ProjectCard({ project, onDelete, onEdit }) {
           </div>
         </div>
 
-        <div className="flex items-center justify-between mt-4 pt-3 border-t border-light-border dark:border-dark-border">
-          <Link to={`/projects/${project.id}`} className="btn-primary !py-1.5 !px-3 text-sm">
-            Detalhes
+        <div className="flex items-center justify-end gap-1 mt-4 pt-3 border-t border-light-border dark:border-dark-border">
+          <Link
+            to={`/projects/${project.id}`}
+            className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-light-border dark:border-dark-border hover:border-accent-500/50 hover:text-accent-500 text-gray-600 dark:text-dark-text-secondary text-sm"
+            title="Detalhes"
+          >
+            👁️
           </Link>
-          <div className="flex gap-1">
-            <button
-              onClick={() => onEdit?.(project)}
-              className="btn-ghost !py-1.5 !px-2.5 text-sm"
-              title="Editar"
-            >
-              ✏️
-            </button>
-            <button
-              onClick={() => onDelete?.(project)}
-              className="btn-ghost !py-1.5 !px-2.5 text-sm hover:!bg-red-500/10 hover:!text-red-500"
-              title="Excluir"
-            >
-              🗑️
-            </button>
-          </div>
+          <button
+            onClick={() => onEdit?.(project)}
+            className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-light-border dark:border-dark-border hover:border-accent-500/50 hover:text-accent-500 text-gray-600 dark:text-dark-text-secondary text-sm"
+            title="Editar"
+          >
+            ✏️
+          </button>
+          <button
+            onClick={() => onDelete?.(project)}
+            className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-light-border dark:border-dark-border hover:border-red-500/50 hover:text-red-500 text-gray-600 dark:text-dark-text-secondary text-sm"
+            title="Excluir"
+          >
+            🗑️
+          </button>
         </div>
       </div>
     </div>
