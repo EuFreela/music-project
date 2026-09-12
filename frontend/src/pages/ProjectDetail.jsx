@@ -416,9 +416,10 @@ export default function ProjectDetail() {
                             href={getTrackLyricsUrl(track)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border border-light-border dark:border-dark-border hover:border-accent-500/50 text-gray-600 dark:text-dark-text-secondary"
+                            title="Abrir letra"
+                            className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-light-border dark:border-dark-border hover:border-accent-500/50 text-gray-600 dark:text-dark-text-secondary"
                           >
-                            📝 Letra ↗
+                            📝
                           </a>
                         ) : (
                           <span className="text-gray-400">—</span>
@@ -427,11 +428,11 @@ export default function ProjectDetail() {
                       <td className="px-4 py-3">
                         {getTrackClipUrl(track) ? (
                           <button
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border border-light-border dark:border-dark-border hover:border-accent-500/50 text-gray-600 dark:text-dark-text-secondary"
+                            className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-light-border dark:border-dark-border hover:border-accent-500/50 hover:text-accent-500 text-gray-600 dark:text-dark-text-secondary"
                             onClick={() => setClipTrackId(track.id)}
                             title="Assistir clipe"
                           >
-                            ▶ Clipe
+                            ▶
                           </button>
                         ) : (
                           <span className="text-gray-400">—</span>
