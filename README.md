@@ -85,6 +85,7 @@ Este sistema é essa **base central** — onde todo projeto musical tem seus dad
 | 🔎 **Busca & filtros** | Pesquisa por nome/artista/gênero e filtro por status (planejamento → produção → lançado) | |
 | 🌗 **Dual theme** | Interface clara/escura com acento roxo (Tailwind CSS) | |
 | 📝 **Markdown** | Textos descritivos (biografia, sobre o álbum, notas, letra/tradução) aceitam **Markdown** para estilização; **bio do artista expansível** (ver mais/ver menos) | |
+| 🎬 **Clipe musical** | Link do **YouTube** exibido como player embutido **dentro da página do projeto** (aceita `watch?v=`, `youtu.be`, `shorts`, `live`) | |
 | 🔐 **Autenticação JWT** | Login único do admin com rate limiting (5 tentativas / 5 min) | |
 | 🗄️ **Migrações Alembic** | Schema versionado no banco — "o Git do banco de dados" | |
 

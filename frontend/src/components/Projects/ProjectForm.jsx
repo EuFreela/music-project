@@ -29,6 +29,7 @@ const EMPTY_FORM = {
   facebook: '',
   youtube: '',
   tiktok: '',
+  clip: '',
 }
 
 const LINK_FIELDS = [
@@ -93,6 +94,7 @@ export default function ProjectForm({ open, onClose, project, onSubmit }) {
         facebook: links.facebook || '',
         youtube: links.youtube || '',
         tiktok: links.tiktok || '',
+        clip: links.clip || '',
       } : EMPTY_FORM)
     }
   }, [open, project])
@@ -116,6 +118,8 @@ export default function ProjectForm({ open, onClose, project, onSubmit }) {
       const url = form[key]?.trim()
       if (url) links[key] = url
     }
+    const clipUrl = form.clip?.trim()
+    if (clipUrl) links.clip = clipUrl
 
     try {
       await onSubmit({
@@ -318,6 +322,17 @@ export default function ProjectForm({ open, onClose, project, onSubmit }) {
                 />
               </div>
             ))}
+          </div>
+          <div className="mt-3">
+            <label className="label">🎬 Clipe musical (YouTube)</label>
+            <input
+              name="clip"
+              className="input"
+              value={form.clip}
+              onChange={handleChange}
+              placeholder="https://www.youtube.com/watch?v=..."
+            />
+            <p className="text-xs text-gray-400 mt-1">O vídeo aparece dentro da página do projeto. Aceita links do tipo youtu.be/..., shorts e watch?v=... .</p>
           </div>
         </div>
 

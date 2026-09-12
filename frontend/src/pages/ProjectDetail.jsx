@@ -30,6 +30,22 @@ const PLATFORM_LABELS = {
   tiktok: 'TikTok',
 }
 
+/* Extrai o ID de um video do YouTube a partir de varios formatos de URL:
+   watch?v=ID, youtu.be/ID, shorts/ID, live/ID, embed/ID */
+function getYoutubeId(url) {
+  if (!url) return null
+  try {
+    const u = new URL(url)
+    if (u.hostname.includes('youtube.com')) {
+      if (u.pathname === '/watch') return u.searchParams.get('v')
+      const m = u.pathname.match(/\/(?:embed|shorts|live)\/([\w-]{6,})/)
+      return m ? m[1] : null
+    }
+    if (u.hostname === 'youtu.be') return (u.pathname.slice(1).split('/')[0]) || null
+  } catch { /* URL invalida */ }
+  return null
+}
+
 export default function ProjectDetail() {
   const { id } = useParams()
   const [project, setProject] = useState(null)
@@ -292,7 +308,7 @@ export default function ProjectDetail() {
             {Object.keys(projectLinks).length > 0 && (
               <div className="flex flex-wrap gap-2 pt-1">
                 {Object.entries(projectLinks).map(([platform, url]) => {
-                  if (!url) return null
+                  if (!url || platform === 'clip') return null
                   return (
                     <a
                       key={platform}
@@ -445,6 +461,26 @@ export default function ProjectDetail() {
       {/* ---------- ABA GERAL ---------- */}
       {tab === 'geral' && (
         <div className="card p-6 space-y-4">
+          {(() => {
+            const clipId = getYoutubeId(projectLinks.clip)
+            if (!clipId) return null
+            return (
+              <div>
+                <h3 className="font-semibold">🎬 Clipe musical</h3>
+                <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-light-border dark:border-dark-border bg-black">
+                  <iframe
+                    className="absolute inset-0 w-full h-full"
+                    src={`https://www.youtube.com/embed/${clipId}`}
+                    title="Clipe musical"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    allowFullScreen
+                  />
+                </div>
+              </div>
+            )
+          })()}
+
           <h3 className="font-semibold">Sobre o Álbum</h3>
           <Markdown>{project.description || 'Nenhuma descrição registrada ainda.'}</Markdown>
 
