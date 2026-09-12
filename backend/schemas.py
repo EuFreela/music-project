@@ -86,7 +86,12 @@ class TrackBase(BaseModel):
     track_number: Optional[int] = None
     lyrics: Optional[str] = None
     translation: Optional[str] = None  # traducao da letra (PT-BR)
-    links: Optional[dict] = None  # {lyrics_url: onde a letra foi publicada}
+    links: Optional[dict] = None  # {lyrics_url: onde a letra foi publicada, clip: youtube}
+    ai_assisted: Optional[bool] = False  # criada/auxiliada por plataforma de IA
+    ai_platform: Optional[str] = None  # plataforma usada (Suno, Udio, ...)
+    lyrics_original: Optional[str] = None  # letra original definida (com espacamento)
+    style_positive: Optional[str] = None  # estilo positivo usado no prompt
+    style_negative: Optional[str] = None  # estilo negativo usado no prompt
 
 
 class TrackCreate(TrackBase):
@@ -102,6 +107,11 @@ class TrackUpdate(BaseModel):
     lyrics: Optional[str] = None
     translation: Optional[str] = None
     links: Optional[dict] = None
+    ai_assisted: Optional[bool] = None
+    ai_platform: Optional[str] = None
+    lyrics_original: Optional[str] = None
+    style_positive: Optional[str] = None
+    style_negative: Optional[str] = None
 
 
 class TrackResponse(TrackBase):

@@ -119,6 +119,13 @@ class Track(Base):
     # Distribuicao: onde a musica foi publicada {streaming_url, spotify, youtube, ...}
     links = Column(JSON, nullable=True)
 
+    # Criacao com IA (auxilio de plataforma de musica por IA)
+    ai_assisted = Column(Boolean, nullable=False, default=False, server_default=text("0"))
+    ai_platform = Column(String(255), nullable=True)  # plataforma usada (Suno, Udio, ...)
+    lyrics_original = Column(Text, nullable=True)  # letra original definida (com espacamento)
+    style_positive = Column(Text, nullable=True)  # estilo positivo usado no prompt
+    style_negative = Column(Text, nullable=True)  # estilo negativo usado no prompt
+
     created_at = Column(DateTime, default=datetime.utcnow)
 
     project = relationship("Project", back_populates="tracks")
