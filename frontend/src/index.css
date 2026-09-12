@@ -46,11 +46,27 @@
   --scrollbar-track: rgba(0, 0, 0, 0.03);
   --scrollbar-thumb: rgba(168, 85, 247, 0.3);
   --scrollbar-thumb-hover: rgba(168, 85, 247, 0.5);
+  --input-bg: #FFFFFF;
+  --input-color: #171717;
 }
 .dark {
   --scrollbar-track: rgba(255, 255, 255, 0.04);
   --scrollbar-thumb: rgba(192, 132, 252, 0.28);
   --scrollbar-thumb-hover: rgba(192, 132, 252, 0.5);
+  --input-bg: #1a1a1a;
+  --input-color: #FFFFFF;
+}
+
+/* Autofill do navegador deve manter as cores do tema (nada de campo branco) */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: var(--input-color);
+  -webkit-box-shadow: 0 0 0 1000px var(--input-bg) inset;
+  caret-color: var(--input-color);
+  transition: background-color 9999s ease-in-out 0s;
 }
 
 *::-webkit-scrollbar {
