@@ -33,7 +33,7 @@ class AdminChangePassword(BaseModel):
 
 
 class AdminAvatarSeed(BaseModel):
-    """Avatar pré-definido (DiceBear Lorelei) - seed vazio/null remove."""
+    """Avatar pré-definido (DiceBear Clay) - seed vazio/null remove."""
     avatar_seed: Optional[str] = None
 
 

@@ -87,7 +87,7 @@ Este sistema é essa **base central** — onde todo projeto musical tem seus dad
 | 📝 **Markdown** | Textos descritivos (biografia, sobre o álbum, notas, letra/tradução) aceitam **Markdown** para estilização; **bio do artista expansível** (ver mais/ver menos) | |
 | 🎬 **Clipe musical por faixa** | Link do **YouTube** de cada música, tocando **dentro do sistema** no botão "▶ Clipe" (aceita `watch?v=`, `youtu.be`, `shorts`, `live`) | |
 | 🔐 **Autenticação JWT** | Login único do admin com rate limiting (5 tentativas / 5 min) | |
-| 👤 **Minha conta** | Troca de **e-mail** e **senha**, avatar **pré-definido (DiceBear Lorelei)** ou **imagem própria** | |
+| 👤 **Minha conta** | Troca de **e-mail** e **senha**, avatar **pré-definido (DiceBear Clay)** ou **imagem própria** | |
 | ⏱️ **Duração total do álbum** | Soma das durações das faixas exibida no cabeçalho e na aba Geral do projeto | |
 | 🗄️ **Migrações Alembic** | Schema versionado no banco — "o Git do banco de dados" | |
 
@@ -256,7 +256,7 @@ Autenticação via `Authorization: Bearer <token>`.
 | `POST` | `/api/auth/login` | Login (com rate limiting) |
 | `GET/PUT` | `/api/auth/me` (e `/email`, `/password`) | Perfil / troca de e-mail / troca de senha |
 | `GET` | `/api/auth/avatar` | Exibir avatar enviado (protegido) |
-| `POST/PUT` | `/api/auth/avatar` | Enviar imagem / definir avatar pré-definido (seed DiceBear) |
+| `POST/PUT` | `/api/auth/avatar` | Enviar imagem / definir avatar pré-definido (seed DiceBear Clay) |
 | `GET/POST` | `/api/projects` | Listar / criar projetos |
 | `GET/PUT/DELETE` | `/api/projects/{id}` | Detalhe / editar / excluir |
 | `POST/GET` | `/api/projects/{id}/cover` | Upload / exibir capa |

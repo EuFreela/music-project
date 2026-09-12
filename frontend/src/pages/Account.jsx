@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import api from '../services/api.js'
 import SecureImage from '../components/UI/SecureImage.jsx'
 
-const DICEBEAR_BASE = 'https://api.dicebear.com/9.x/clay/svg'
+const DICEBEAR_BASE = 'https://api.dicebear.com/10.x/clay/svg'
 const AVATAR_SEEDS = ['Lia', 'Maya', 'Nina', 'Aria', 'Zoe', 'Bella', 'Luna', 'Ivy', 'Mila', 'Sofia']
 
 function dicebearUrl(seed) {
@@ -181,7 +181,7 @@ export default function Account() {
         </div>
 
         <div>
-          <p className="label">Avatares pré-definidos (DiceBear Lorelei)</p>
+          <p className="label">Avatares pré-definidos (DiceBear Clay)</p>
           <div className="grid grid-cols-5 gap-2 mt-2">
             {AVATAR_SEEDS.map((s) => (
               <button

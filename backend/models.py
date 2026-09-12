@@ -37,7 +37,7 @@ class Admin(Base):
     last_login = Column(DateTime, nullable=True)
     login_attempts = Column(Integer, default=0)
     locked_until = Column(DateTime, nullable=True)
-    avatar_seed = Column(String(100), nullable=True)  # avatar pré-definido (DiceBear Lorelei)
+    avatar_seed = Column(String(100), nullable=True)  # avatar pré-definido (DiceBear Clay)
     avatar_path = Column(String(500), nullable=True)  # avatar enviado (imagem enviada)
 
 

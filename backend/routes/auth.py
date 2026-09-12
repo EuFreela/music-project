@@ -174,7 +174,7 @@ def set_avatar_seed(
     db: Session = Depends(get_db),
     _: Admin = Depends(get_current_admin),
 ):
-    """Define avatar pre-definido (seed do DiceBear Lorelei) ou remove."""
+    """Define avatar pre-definido (seed do DiceBear Clay) ou remove."""
     seed = (data.avatar_seed or "").strip()
     admin = _load_admin(db)
 
