@@ -137,8 +137,13 @@ export default function ProjectDetail() {
     return l.lyrics_url || l.streaming_url || l.spotify || l.youtube || l.youtube_music || l.deezer || null
   }
 
+  const getTrackClipUrl = (track) => (track.links || {}).clip || null
+
   // ---------- Letra & Traducao (painel de leitura, sem modal) ----------
   const [lyricsTrackId, setLyricsTrackId] = useState(null)
+
+  // ---------- Clipe musical (player em modal por faixa) ----------
+  const [clipTrackId, setClipTrackId] = useState(null)
 
   const saveTrackLyrics = async (data) => {
     const track = project.tracks.find((t) => t.id === lyricsTrackId)
@@ -308,7 +313,7 @@ export default function ProjectDetail() {
             {Object.keys(projectLinks).length > 0 && (
               <div className="flex flex-wrap gap-2 pt-1">
                 {Object.entries(projectLinks).map(([platform, url]) => {
-                  if (!url || platform === 'clip') return null
+                  if (!url) return null
                   return (
                     <a
                       key={platform}
@@ -369,6 +374,7 @@ export default function ProjectDetail() {
                     <th className="px-4 py-3 font-medium">Duração</th>
                     <th className="px-4 py-3 font-medium">Áudio</th>
                     <th className="px-4 py-3 font-medium">Letra</th>
+                    <th className="px-4 py-3 font-medium">Clipe</th>
                     <th className="px-4 py-3 font-medium text-right">Ações</th>
                   </tr>
                 </thead>
@@ -418,6 +424,19 @@ export default function ProjectDetail() {
                           <span className="text-gray-400">—</span>
                         )}
                       </td>
+                      <td className="px-4 py-3">
+                        {getTrackClipUrl(track) ? (
+                          <button
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border border-light-border dark:border-dark-border hover:border-accent-500/50 text-gray-600 dark:text-dark-text-secondary"
+                            onClick={() => setClipTrackId(track.id)}
+                            title="Assistir clipe"
+                          >
+                            ▶ Clipe
+                          </button>
+                        ) : (
+                          <span className="text-gray-400">—</span>
+                        )}
+                      </td>
                       <td className="px-4 py-3 text-right whitespace-nowrap">
                         <button
                           className={`btn-ghost !py-1 !px-2 text-sm ${lyricsTrackId === track.id ? '!text-accent-500' : ''}`}
@@ -447,6 +466,26 @@ export default function ProjectDetail() {
             )
           })()}
 
+          {clipTrackId && (() => {
+            const current = project.tracks.find((t) => t.id === clipTrackId)
+            const clipId = current ? getYoutubeId(getTrackClipUrl(current)) : null
+            if (!current || !clipId) return null
+            return (
+              <Modal title={`🎬 ${current.title} — Clipe`} onClose={() => setClipTrackId(null)}>
+                <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black">
+                  <iframe
+                    className="absolute inset-0 w-full h-full"
+                    src={`https://www.youtube.com/embed/${clipId}`}
+                    title={`Clipe de ${current.title}`}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    allowFullScreen
+                  />
+                </div>
+              </Modal>
+            )
+          })()}
+
           {trackModal && (
             <TrackFormModal
               track={trackModal.id ? trackModal : null}
@@ -461,26 +500,6 @@ export default function ProjectDetail() {
       {/* ---------- ABA GERAL ---------- */}
       {tab === 'geral' && (
         <div className="card p-6 space-y-4">
-          {(() => {
-            const clipId = getYoutubeId(projectLinks.clip)
-            if (!clipId) return null
-            return (
-              <div>
-                <h3 className="font-semibold">🎬 Clipe musical</h3>
-                <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-light-border dark:border-dark-border bg-black">
-                  <iframe
-                    className="absolute inset-0 w-full h-full"
-                    src={`https://www.youtube.com/embed/${clipId}`}
-                    title="Clipe musical"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    referrerPolicy="strict-origin-when-cross-origin"
-                    allowFullScreen
-                  />
-                </div>
-              </div>
-            )
-          })()}
-
           <h3 className="font-semibold">Sobre o Álbum</h3>
           <Markdown>{project.description || 'Nenhuma descrição registrada ainda.'}</Markdown>
 
@@ -668,12 +687,14 @@ function TrackFormModal({ track, onClose, onSubmit, existingTracks }) {
     duration: track.duration || '',
     track_number: track.track_number ?? (existingTracks.length + 1),
     link: (track.links && (track.links.lyrics_url || track.links.streaming_url || track.links.spotify || track.links.youtube || '')) || '',
+    clip: (track.links && track.links.clip) || '',
   } : {
     title: '',
     isrc: '',
     duration: '',
     track_number: existingTracks.length + 1,
     link: '',
+    clip: '',
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -683,12 +704,18 @@ function TrackFormModal({ track, onClose, onSubmit, existingTracks }) {
     if (!form.title.trim()) { setError('Título da faixa é obrigatório'); return }
     setLoading(true)
     try {
+      const links = { ...(track?.links || {}) }
+      if (form.link?.trim()) links.lyrics_url = form.link.trim()
+      else delete links.lyrics_url
+      if (form.clip?.trim()) links.clip = form.clip.trim()
+      else delete links.clip
+
       await onSubmit({
         title: form.title.trim(),
         isrc: form.isrc?.trim() || null,
         duration: form.duration?.trim() || null,
         track_number: form.track_number === '' ? null : Number(form.track_number),
-        links: form.link?.trim() ? { lyrics_url: form.link.trim() } : null,
+        links: Object.keys(links).length ? links : null,
       })
     } catch (err) {
       setError(err.response?.data?.detail || 'Erro ao salvar faixa')
@@ -733,6 +760,17 @@ function TrackFormModal({ track, onClose, onSubmit, existingTracks }) {
             placeholder="Onde a letra foi publicada (site de letras, YouTube…)"
           />
           <p className="text-xs text-gray-400 mt-1">Ex.: https://www.letras.mus.br/… — aparece no botão "Letra" da faixa. A letra e a tradução são escritas no painel 📖.</p>
+        </div>
+        <div>
+          <label className="label">🎬 Clipe musical (YouTube)</label>
+          <input
+            type="url"
+            className="input"
+            value={form.clip}
+            onChange={(e) => setForm({ ...form, clip: e.target.value })}
+            placeholder="https://www.youtube.com/watch?v=..."
+          />
+          <p className="text-xs text-gray-400 mt-1">Se a música tiver clipe, cole o link aqui — ele aparece no botão "▶ Clipe" na lista de faixas. Aceita youtu.be/..., shorts e watch?v=... .</p>
         </div>
         <div className="flex justify-end gap-2 pt-2">
           <button type="button" className="btn-secondary" onClick={onClose}>Cancelar</button>
