@@ -1,14 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react'
 import api from '../../services/api.js'
+import ImageLightbox from './ImageLightbox.jsx'
 
 /**
  * Exibe uma imagem protegida por autenticacao (Bearer).
  * Busca via blob com token e gera Object URL (img comum nao envia token).
  * Se falhar ou nao tiver imagem, renderiza o placeholder `fallback`.
+ *
+ * Por padrao (`expandable`), clicar na imagem a abre expandida (lightbox).
  */
-export default function SecureImage({ src, alt, className, fallback = '🎵' }) {
+export default function SecureImage({ src, alt, className, fallback = '🎵', expandable = true }) {
   const [url, setUrl] = useState(null)
   const [failed, setFailed] = useState(false)
+  const [expanded, setExpanded] = useState(false)
   const urlRef = useRef(null)
 
   useEffect(() => {
@@ -43,5 +47,22 @@ export default function SecureImage({ src, alt, className, fallback = '🎵' }) 
     )
   }
 
-  return <img src={url} alt={alt || ''} className={className || ''} loading="lazy" />
+  const canExpand = expandable && !!url
+
+  return (
+    <>
+      <img
+        src={url}
+        alt={alt || ''}
+        className={`${className || ''}${canExpand ? ' cursor-zoom-in' : ''}`}
+        loading="lazy"
+        onClick={canExpand ? (e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          setExpanded(true)
+        } : undefined}
+      />
+      {expanded && <ImageLightbox src={url} alt={alt} onClose={() => setExpanded(false)} />}
+    </>
+  )
 }

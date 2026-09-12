@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import ThemeToggle from './ThemeToggle.jsx'
 import SecureImage from '../UI/SecureImage.jsx'
+import ZoomableImage from '../UI/ZoomableImage.jsx'
 import api from '../../services/api.js'
 
 const DICEBEAR_BASE = 'https://api.dicebear.com/10.x/clay/svg'
@@ -75,7 +76,7 @@ export default function Navbar({ onMenuClick }) {
               className="flex items-center gap-3 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-card px-2 py-1"
             >
               {profile?.avatar_seed ? (
-                <img
+                <ZoomableImage
                   src={`${DICEBEAR_BASE}?seed=${encodeURIComponent(profile.avatar_seed)}`}
                   alt="Avatar"
                   className="w-8 h-8 rounded-full object-cover"

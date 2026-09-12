@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import api from '../services/api.js'
 import SecureImage from '../components/UI/SecureImage.jsx'
+import ZoomableImage from '../components/UI/ZoomableImage.jsx'
 
 const DICEBEAR_BASE = 'https://api.dicebear.com/10.x/clay/svg'
 const AVATAR_SEEDS = ['Lia', 'Maya', 'Nina', 'Aria', 'Zoe', 'Bella', 'Luna', 'Ivy', 'Mila', 'Sofia']
@@ -155,7 +156,7 @@ export default function Account() {
 
         <div className="flex items-center gap-4">
           {profile?.avatar_seed ? (
-            <img
+            <ZoomableImage
               src={dicebearUrl(profile.avatar_seed)}
               alt="Avatar"
               className="w-24 h-24 rounded-full object-cover"
