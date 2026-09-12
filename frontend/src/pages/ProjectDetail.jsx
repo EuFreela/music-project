@@ -279,6 +279,7 @@ export default function ProjectDetail() {
   // Duracao total do album/projeto (soma das duracoes das faixas)
   const albumTotalSeconds = (project.tracks || []).reduce((acc, t) => acc + parseDurationSeconds(t.duration), 0)
   const albumDurationLabel = albumTotalSeconds > 0 ? formatTotalMinutes(albumTotalSeconds) : null
+  const sortedTracks = [...(project.tracks || [])].sort((a, b) => (a.track_number || 0) - (b.track_number || 0))
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -403,8 +404,10 @@ export default function ProjectDetail() {
               Nenhuma faixa registrada. Adicione músicas ao projeto.
             </div>
           ) : (
-            <div className="card overflow-hidden">
-              <table className="w-full text-sm">
+            <>
+            <div className="card overflow-hidden hidden md:block">
+              <div className="overflow-x-auto">
+              <table className="w-full text-sm min-w-[780px]">
                 <thead className="bg-gray-50 dark:bg-dark-border/50">
                   <tr className="text-left text-gray-500 dark:text-gray-400">
                     <th className="px-4 py-3 font-medium">#</th>
@@ -418,7 +421,7 @@ export default function ProjectDetail() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-light-border dark:divide-dark-border">
-                  {[...project.tracks].sort((a, b) => (a.track_number || 0) - (b.track_number || 0)).map((track) => (
+                  {sortedTracks.map((track) => (
                     <tr key={track.id} className="hover:bg-gray-50 dark:hover:bg-dark-card">
                       <td className="px-4 py-3 text-gray-400">{track.track_number || '—'}</td>
                       <td className="px-4 py-3 font-medium">{track.title}</td>
@@ -476,9 +479,6 @@ export default function ProjectDetail() {
                         ) : (
                           <span className="text-gray-400">—</span>
                         )}
-                        ) : (
-                          <span className="text-gray-400">—</span>
-                        )}
                       </td>
                       <td className="px-4 py-3 text-right whitespace-nowrap">
                         <button
@@ -507,7 +507,110 @@ export default function ProjectDetail() {
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
+
+            {/* Cards mobile (tabela visivel apenas em telas sm+) */}
+            <div className="md:hidden space-y-3">
+              {sortedTracks.map((track) => (
+                <div key={track.id} className="card overflow-hidden">
+                  <div className="p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-start gap-3 min-w-0">
+                      <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-light-border dark:bg-dark-border text-gray-600 dark:text-dark-text-secondary font-semibold text-sm shrink-0">
+                        {track.track_number || '–'}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="font-semibold break-words leading-snug">{track.title}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 flex flex-wrap gap-x-2 gap-y-0.5">
+                          {track.isrc ? <span className="font-mono break-all">{track.isrc}</span> : <span>Sem ISRC</span>}
+                          {track.duration && <span className="whitespace-nowrap">⏱️ {track.duration}</span>}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-light-border dark:border-dark-border hover:border-accent-500/50 hover:text-accent-500 text-sm"
+                        onClick={() => setLyricsTrackId(lyricsTrackId === track.id ? null : track.id)}
+                        title="Ler/editar letra e tradução"
+                      >
+                        📖
+                      </button>
+                      <button
+                        className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-light-border dark:border-dark-border hover:border-accent-500/50 hover:text-accent-500 text-sm"
+                        onClick={() => setTrackModal(track)}
+                        title="Editar faixa"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-light-border dark:border-dark-border hover:border-red-500/50 hover:text-red-500 text-sm"
+                        onClick={() => setAskDelete({ type: 'track', item: track })}
+                        title="Excluir faixa"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </div>
+
+                  {track.audio_original_filename ? (
+                    <div className="flex items-center gap-2">
+                      <TrackAudio src={`/projects/${id}/tracks/${track.id}/audio`} title={track.title} />
+                      <button
+                        className="btn-ghost !py-1 !px-2 text-xs hover:!text-red-500"
+                        onClick={() => setAskDelete({ type: 'audio', item: track })}
+                        title={`Remover áudio: ${track.audio_original_filename}`}
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="btn-ghost !py-1 !px-3 text-xs cursor-pointer inline-flex items-center gap-1 rounded-full" title="Enviar MP3 da faixa">
+                      {audioUploadingId === track.id ? 'Enviando…' : '⬆ Enviar MP3'}
+                      <input
+                        type="file"
+                        accept="audio/*,.mp3,.wav,.flac,.aac,.ogg,.m4a"
+                        className="hidden"
+                        onChange={(e) => uploadTrackAudio(e, track.id)}
+                        disabled={audioUploadingId === track.id}
+                      />
+                    </label>
+                  )}
+
+                  <div className="flex items-center gap-2 flex-wrap border-t border-light-border dark:border-dark-border pt-3 mt-3">
+                    {getTrackLyricsUrl(track) ? (
+                      <a
+                        href={getTrackLyricsUrl(track)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border border-light-border dark:border-dark-border hover:border-accent-500/50 text-xs text-gray-600 dark:text-dark-text-secondary"
+                      >
+                        📝 Letra
+                      </a>
+                    ) : (
+                      <button
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border border-light-border dark:border-dark-border hover:border-accent-500/50 text-xs text-gray-400"
+                        onClick={() => setLyricsTrackId(lyricsTrackId === track.id ? null : track.id)}
+                        title="Adicionar link da letra"
+                      >
+                        📝 Sem letra
+                      </button>
+                    )}
+                    {getTrackClipUrl(track) && (
+                      <button
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full border border-light-border dark:border-dark-border hover:border-accent-500/50 hover:text-accent-500 text-xs text-gray-600 dark:text-dark-text-secondary"
+                        onClick={() => setClipTrackId(track.id)}
+                        title="Assistir clipe"
+                      >
+                        ▶ Clipe
+                      </button>
+                    )}
+                  </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            </>
           )}
 
           {lyricsTrackId && (() => {
@@ -562,24 +665,24 @@ export default function ProjectDetail() {
           <Markdown>{project.notes || 'Nenhuma nota registrada ainda.'}</Markdown>
 
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 pt-4 border-t border-light-border dark:border-dark-border text-center">
-            <div>
-              <p className="text-2xl font-bold">{project.tracks.length}</p>
+            <div className="min-w-0">
+              <p className="text-xl sm:text-2xl font-bold break-words">{project.tracks.length}</p>
               <p className="text-xs text-gray-400">Faixas</p>
             </div>
-            <div>
-              <p className="text-2xl font-bold">{albumDurationLabel || '—'}</p>
+            <div className="min-w-0">
+              <p className="text-xl sm:text-2xl font-bold break-words">{albumDurationLabel || '—'}</p>
               <p className="text-xs text-gray-400">Duração</p>
             </div>
-            <div>
-              <p className="text-2xl font-bold">{project.collaborators.length}</p>
+            <div className="min-w-0">
+              <p className="text-xl sm:text-2xl font-bold break-words">{project.collaborators.length}</p>
               <p className="text-xs text-gray-400">Colaboradores</p>
             </div>
-            <div>
-              <p className="text-2xl font-bold">{project.files.length}</p>
+            <div className="min-w-0">
+              <p className="text-xl sm:text-2xl font-bold break-words">{project.files.length}</p>
               <p className="text-xs text-gray-400">Arquivos</p>
             </div>
-            <div>
-              <p className={`text-2xl font-bold ${profit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+            <div className="min-w-0 col-span-2 sm:col-span-1">
+              <p className={`text-xl sm:text-2xl font-bold break-words ${profit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                 {formatMoney(profit)}
               </p>
               <p className="text-xs text-gray-400">Resultado</p>
@@ -602,8 +705,10 @@ export default function ProjectDetail() {
               Nenhum colaborador registrado.
             </div>
           ) : (
-            <div className="card overflow-hidden">
-              <table className="w-full text-sm">
+            <>
+            <div className="card overflow-hidden hidden md:block">
+              <div className="overflow-x-auto">
+              <table className="w-full text-sm min-w-[560px]">
                 <thead className="bg-gray-50 dark:bg-dark-border/50">
                   <tr className="text-left text-gray-500 dark:text-gray-400">
                     <th className="px-4 py-3 font-medium">Nome</th>
@@ -619,14 +724,43 @@ export default function ProjectDetail() {
                       <td className="px-4 py-3">{c.role || '—'}</td>
                       <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{c.contact || '—'}</td>
                       <td className="px-4 py-3 text-right">
-                        <button className="btn-ghost !py-1 !px-2 text-sm" onClick={() => setCollabModal(c)}>✏️</button>
-                        <button className="btn-ghost !py-1 !px-2 text-sm hover:!text-red-500" onClick={() => setAskDelete({ type: 'collab', item: c })}>🗑️</button>
+                        <button
+                          className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-light-border dark:border-dark-border hover:border-accent-500/50 hover:text-accent-500 text-gray-600 dark:text-dark-text-secondary"
+                          onClick={() => setCollabModal(c)}
+                          title="Editar"
+                        >✏️</button>
+                        <button
+                          className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-light-border dark:border-dark-border hover:border-red-500/50 hover:text-red-500 text-gray-600 dark:text-dark-text-secondary"
+                          onClick={() => setAskDelete({ type: 'collab', item: c })}
+                          title="Excluir"
+                        >🗑️</button>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
+
+            {/* Cards mobile */}
+            <div className="md:hidden space-y-3">
+              {project.collaborators.map((c) => (
+                <div key={c.id} className="card p-4 space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="font-medium break-words">{c.name}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{c.role || 'Sem função'}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 break-words">{c.contact || '—'}</p>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button className="btn-ghost !p-2 !rounded-full text-sm" onClick={() => setCollabModal(c)} title="Editar">✏️</button>
+                      <button className="btn-ghost !p-2 !rounded-full text-sm hover:!text-red-500" onClick={() => setAskDelete({ type: 'collab', item: c })} title="Excluir">🗑️</button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            </>
           )}
 
           {collabModal && (
@@ -654,8 +788,10 @@ export default function ProjectDetail() {
               Nenhum arquivo enviado. Formatos: áudio, imagem, documentos (até 50MB).
             </div>
           ) : (
-            <div className="card overflow-hidden">
-              <table className="w-full text-sm">
+            <>
+            <div className="card overflow-hidden hidden md:block">
+              <div className="overflow-x-auto">
+              <table className="w-full text-sm min-w-[620px]">
                 <thead className="bg-gray-50 dark:bg-dark-border/50">
                   <tr className="text-left text-gray-500 dark:text-gray-400">
                     <th className="px-4 py-3 font-medium">Tipo</th>
@@ -677,17 +813,55 @@ export default function ProjectDetail() {
                       <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{formatSize(f.file_size)}</td>
                       <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{formatDate(f.created_at)}</td>
                       <td className="px-4 py-3 text-right whitespace-nowrap">
-                        <button className="btn-ghost !py-1 !px-2 text-sm" onClick={() => downloadFile(f)}>⬇</button>
-                        <button className="btn-ghost !py-1 !px-2 text-sm hover:!text-red-500" onClick={() => setAskDelete({ type: 'file', item: f })}>🗑️</button>
+                        <button
+                          className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-light-border dark:border-dark-border hover:border-accent-500/50 hover:text-accent-500 text-gray-600 dark:text-dark-text-secondary"
+                          onClick={() => downloadFile(f)}
+                          title="Baixar"
+                        >⬇</button>
+                        <button
+                          className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-light-border dark:border-dark-border hover:border-red-500/50 hover:text-red-500 text-gray-600 dark:text-dark-text-secondary"
+                          onClick={() => setAskDelete({ type: 'file', item: f })}
+                          title="Excluir"
+                        >🗑️</button>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+              </div>
               <p className="px-4 py-3 text-xs text-gray-400 bg-gray-50 dark:bg-dark-border/30">
                 🔒 Arquivos protegidos - acesso apenas via API autenticada
               </p>
             </div>
+
+            {/* Cards mobile */}
+            <div className="md:hidden space-y-3">
+              {project.files.map((f) => (
+                <div key={f.id} className="card p-4 space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex items-start gap-2">
+                      <span className="text-lg shrink-0">
+                        {f.file_type === 'audio' ? '🎵' : f.file_type === 'image' ? '🖼️' : '📄'}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="font-medium break-words" title={f.original_filename}>{f.original_filename}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          {formatSize(f.file_size)} • Enviado em {formatDate(f.created_at)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button className="btn-ghost !p-2 !rounded-full text-sm" onClick={() => downloadFile(f)} title="Baixar">⬇</button>
+                      <button className="btn-ghost !p-2 !rounded-full text-sm hover:!text-red-500" onClick={() => setAskDelete({ type: 'file', item: f })} title="Excluir">🗑️</button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <p className="px-2 text-xs text-gray-400">
+                🔒 Arquivos protegidos - acesso apenas via API autenticada
+              </p>
+            </div>
+            </>
           )}
         </div>
       )}

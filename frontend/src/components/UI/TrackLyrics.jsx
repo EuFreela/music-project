@@ -69,7 +69,7 @@ export default function TrackLyrics({ track, onSave }) {
         !hasContent ? (
           <p className="text-sm text-gray-400">Nenhuma letra registrada. Use "Escrever Letra & Tradução".</p>
         ) : (
-          <div className="grid grid-cols-2 gap-px bg-light-border dark:bg-dark-border rounded-lg overflow-hidden text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-light-border dark:bg-dark-border rounded-lg overflow-hidden text-sm">
             <div className="bg-light-card dark:bg-dark-card px-4 py-2 font-semibold text-gray-600 dark:text-dark-text-secondary">
               🇬🇧 Letra original
             </div>
