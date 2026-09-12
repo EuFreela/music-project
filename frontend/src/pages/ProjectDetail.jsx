@@ -46,6 +46,32 @@ function getYoutubeId(url) {
   return null
 }
 
+/* Converte duracoes em texto livre para segundos (ex.: "3:45", "2 min 30 s") */
+function parseDurationSeconds(value) {
+  if (!value) return 0
+  const t = String(value).trim()
+  const hms = t.match(/^(\d{1,3}):(\d{1,2})(?::(\d{1,2}))?$/)
+  if (hms) {
+    const [, a, b, c] = hms
+    // Com horas (H:MM:SS) -> a=horas; sem horas (M:SS) -> a=minutos
+    return c !== undefined ? Number(a) * 3600 + Number(b) * 60 + Number(c) : Number(a) * 60 + Number(b)
+  }
+  const min = t.match(/(\d+)\s*min/)
+  const sec = t.match(/(\d+)\s*s\b/)
+  if (min || sec) return (min ? Number(min[1]) * 60 : 0) + (sec ? Number(sec[1]) : 0)
+  return 0
+}
+
+/* Formata o total em minutos legiveis (ex.: 32 min, 1 h 5 min) */
+function formatTotalMinutes(totalSeconds) {
+  if (!totalSeconds) return 0
+  const totalMin = Math.round(totalSeconds / 60)
+  if (totalMin < 60) return `${totalMin} min`
+  const h = Math.floor(totalMin / 60)
+  const m = totalMin % 60
+  return m ? `${h} h ${m} min` : `${h} h`
+}
+
 export default function ProjectDetail() {
   const { id } = useParams()
   const [project, setProject] = useState(null)
@@ -250,6 +276,10 @@ export default function ProjectDetail() {
   const artistName = project.artist_ref?.name || project.artist || 'Artista não definido'
   const projectLinks = project.links || {}
 
+  // Duracao total do album/projeto (soma das duracoes das faixas)
+  const albumTotalSeconds = (project.tracks || []).reduce((acc, t) => acc + parseDurationSeconds(t.duration), 0)
+  const albumDurationLabel = albumTotalSeconds > 0 ? formatTotalMinutes(albumTotalSeconds) : null
+
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       {/* Cabecalho */}
@@ -302,6 +332,11 @@ export default function ProjectDetail() {
               {project.upc && (
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-xs border border-light-border dark:border-dark-border text-gray-600 dark:text-dark-text-secondary">
                   UPC: {project.upc}
+                </span>
+              )}
+              {albumDurationLabel && (
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs border border-accent-500/40 text-accent-500">
+                  ⏱️ {albumDurationLabel}
                 </span>
               )}
               {project.distributed && (
@@ -507,10 +542,14 @@ export default function ProjectDetail() {
           <h3 className="font-semibold pt-2 border-t border-light-border dark:border-dark-border">Notas e Observações</h3>
           <Markdown>{project.notes || 'Nenhuma nota registrada ainda.'}</Markdown>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-light-border dark:border-dark-border text-center">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 pt-4 border-t border-light-border dark:border-dark-border text-center">
             <div>
               <p className="text-2xl font-bold">{project.tracks.length}</p>
               <p className="text-xs text-gray-400">Faixas</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold">{albumDurationLabel || '—'}</p>
+              <p className="text-xs text-gray-400">Duração</p>
             </div>
             <div>
               <p className="text-2xl font-bold">{project.collaborators.length}</p>
